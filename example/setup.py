@@ -4,8 +4,8 @@ from setuptools_dso import DSO, Extension, build_dso, build_ext, setup
 
 dso = DSO('dsodemo.lib.demo', ['foo.c', 'bar.cpp'],
     define_macros = [('BUILD_FOO', None)],
-    extra_compile_args = {
-        '*':['-DALL'],
+    extra_compile_args = ['-DALL'],
+    lang_compile_args = {
         'c':['-DISC'],
         'c++':['-DISCXX'],
     },

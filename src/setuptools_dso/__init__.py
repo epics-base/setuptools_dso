@@ -1,6 +1,6 @@
 
 from setuptools import setup as _setup
-from .dsocmd import DSO, Extension, build_dso, build_ext, egg_info
+from .dsocmd import DSO, Extension, build_dso, build_ext, bdist_egg
 
 from setuptools.command.install import install
 
@@ -9,13 +9,13 @@ __all__ = (
     'Extension',
     'build_dso',
     'build_ext',
-    'egg_info',
+    'bdist_egg',
     'setup',
 )
 
 def setup(**kws):
     cmdclass = kws.get('cmdclass', {})
-    cmdclass['egg_info'] = egg_info
+    cmdclass['bdist_egg'] = bdist_egg
     cmdclass['build_dso'] = build_dso
     cmdclass['build_ext'] = build_ext
     kws['cmdclass'] = cmdclass

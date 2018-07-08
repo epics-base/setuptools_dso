@@ -9,7 +9,7 @@ from importlib import import_module # say that three times fast...
 from setuptools import Command, Distribution, Extension as _Extension
 from setuptools.command.build_ext import build_ext as _build_ext
 from setuptools.command.install import install
-from setuptools.command.egg_info import egg_info as _egg_info
+from setuptools.command.bdist_egg import bdist_egg as _bdist_egg
 from distutils.command.build import build
 
 from distutils.sysconfig import customize_compiler
@@ -27,6 +27,14 @@ def massage_dir_list(bdir, dirs):
     dirs.extend([os.path.join(bdir, D) for D in dirs if not os.path.isabs(D)])
     return dirs
 
+def expand_sources(cmd, sources):
+    for i,src in enumerate(sources):
+        if os.path.exists(src):
+            continue
+        cand = os.path.join(cmd.build_temp, src)
+        if os.path.exists(cand):
+            sources[i] = cand
+
 class Extension(_Extension):
     def __init__(self, name, sources,
                  dsos=None,
@@ -37,12 +45,11 @@ class Extension(_Extension):
 class DSO(_Extension):
     def __init__(self, name, sources,
                  soversion=None,
-                 extra_compile_args=None,
+                 lang_compile_args=None,
                  dsos=None,
                  **kws):
-        if not isinstance(extra_compile_args, dict):
-            extra_compile_args = {'*':extra_compile_args}
-        _Extension.__init__(self, name, sources, extra_compile_args=extra_compile_args, **kws)
+        _Extension.__init__(self, name, sources, **kws)
+        self.lang_compile_args = lang_compile_args or {}
         self.soversion = soversion or None
         self.dsos = dsos or []
 
@@ -210,6 +217,9 @@ class build_dso(dso2libmixin, Command):
 
 
     def build_dso(self, dso):
+        expand_sources(self, dso.sources)
+        expand_sources(self, dso.depends)
+
         baselib = self._name2file(dso)
         solib = self._name2file(dso, so=True)
 
@@ -228,7 +238,7 @@ class build_dso(dso2libmixin, Command):
         for undef in dso.undef_macros:
             macros.append((undef,))
 
-        extra_args = dso.extra_compile_args.get('*', []) or []
+        extra_args = dso.extra_compile_args or []
 
         include_dirs = massage_dir_list(self.build_temp, dso.include_dirs or [])
 
@@ -246,7 +256,7 @@ class build_dso(dso2libmixin, Command):
                                             macros=macros,
                                             include_dirs=include_dirs,
                                             #debug=self.debug,
-                                            extra_postargs=dso.extra_compile_args.get('*', []) + dso.extra_compile_args.get(lang, []),
+                                            extra_postargs=extra_args + (dso.lang_compile_args.get(lang) or []),
                                             depends=dso.depends))
 
         library_dirs = massage_dir_list(self.build_lib, dso.library_dirs or [])
@@ -308,6 +318,9 @@ class build_ext(dso2libmixin, _build_ext):
         _build_ext.run(self)
 
     def build_extension(self, ext):
+        expand_sources(self, ext.sources)
+        expand_sources(self, ext.depends)
+
         ext.include_dirs = massage_dir_list(self.build_temp, ext.include_dirs or [])
         ext.library_dirs = massage_dir_list(self.build_lib  , ext.library_dirs or [])
 
@@ -326,7 +339,7 @@ class build_ext(dso2libmixin, _build_ext):
 #   Arranging for 'build_dso' to be run is seriously annoying!
 #
 #   distutils presents such a simple idea.  We just add 'build_dso' to build.sub_commands.
-#   'install' will first run 'build', and we're done.
+#   'install' will first run 'build', and we're done for everything except 'bdist_egg'.
 #
 #   Enter setuptools...  setuptools decides to automagically alias 'install' as 'bdist_egg'.
 #   Seriously 'magic', it's inspecting the strack frames...
@@ -335,22 +348,25 @@ class build_ext(dso2libmixin, _build_ext):
 #   or 'install' (fuck!), but does it's own thing by piecemeal calling
 #   eg. 'egg_info', 'build_clib' (conditionally), 'install_lib'.
 #
-#   'bdist_wheel' is better behaved, and actually runs 'build'.
-#
 # so what to do...
 #
 # 1. insert 'build_dso' before 'build_clib' in the 'build' sequence.
 #    This handles everything except 'bdist_egg' (aka. 'setup.py install')...
 #
-# 2. override 'egg_info' to run 'build_dso' afterwards.
+# 2. override 'bdist_egg' to run 'build_dso' at an appropriate point.
 
 def has_dsos(cmd):
     return len(getattr(cmd.distribution, 'x_dsos', []))>0
 
-class egg_info(_egg_info):
-    def run(self):
-        _egg_info.run(self)
-        if has_dsos(self):
+class bdist_egg(_bdist_egg):
+    # An ugly hack on top of an ugly hack...
+    #
+    # we can't hook into 'egg_info' unconditionally, as other targets like 'sdist'
+    # don't want to build things...
+    # so instead we hook in and run 'build_dso' just after 'egg_info'.
+    def run_command(self, cmd):
+        _bdist_egg.run_command(self, cmd)
+        if cmd=='egg_info' and has_dsos(self):
             self.run_command('build_dso')
 
 for i,(name,_test) in enumerate(build.sub_commands):
