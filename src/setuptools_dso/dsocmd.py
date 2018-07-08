@@ -25,6 +25,9 @@ def massage_dir_list(bdir, dirs):
     """
     dirs = dirs or []
     dirs.extend([os.path.join(bdir, D) for D in dirs if not os.path.isabs(D)])
+    if os.name == 'nt':
+        bdir = os.path.dirname(bdir) # strip /Release or /Debug
+        dirs.extend([os.path.join(bdir, D) for D in dirs if not os.path.isabs(D)])
     return dirs
 
 def expand_sources(cmd, sources):

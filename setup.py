@@ -4,7 +4,7 @@ from setuptools import setup, Extension
 
 setup(
     name='setuptools_dso',
-    version="0.1a2",
+    version="0.1a3",
     description="setuptools extension to build non-python shared libraries",
     long_description="""setuptools extension for building non-python shared libraries
 and packaging them for distribution.  eg. for use by python extensions.
