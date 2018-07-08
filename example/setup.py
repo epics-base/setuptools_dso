@@ -19,6 +19,7 @@ ext = Extension('dsodemo.ext.dtest', ['extension.cpp'],
 setup(
     name='dsodemo',
     version="0.1",
+    setup_requires = ['setuptools_dso'],
     packages=['dsodemo', 'dsodemo.ext'],
     ext_modules = [ext],
     x_dsos = [dso],

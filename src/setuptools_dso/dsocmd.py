@@ -58,6 +58,7 @@ class dso2libmixin:
         mypath = os.path.join(*ext.name.split('.')[:-1])
 
         soargs = set()
+        self._osx_changes = []
 
         for dso in getattr(ext, 'dsos', []):
             log.debug("Will link against DSO %s"%dso)
@@ -82,7 +83,6 @@ class dso2libmixin:
                 pass
 
             found = False
-            self._osx_changes = []
             for candidate in dsosearch:
                 C = os.path.join(candidate, libname)
                 if not os.path.isfile(C):
@@ -120,12 +120,11 @@ class dso2libmixin:
 
         ext.extra_link_args.extend(list(soargs))
 
-    def dso2lib_post(self, ext):
+    def dso2lib_post(self, ext_path):
         if sys.platform == 'darwin':
-            ext_path = self.get_ext_fullpath(ext.name)
             self.spawn(['otool', '-L', ext_path])
 
-            for old, new in osx_changes:
+            for old, new in self._osx_changes:
                 self.spawn(['install_name_tool', '-change', old, new, ext_path])
 
             self.spawn(['otool', '-L', ext_path])
@@ -195,9 +194,7 @@ class build_dso(dso2libmixin, Command):
                     self.compiler.linker_so[i] = '-dynamiclib'
 
         for dso in self.dsos:
-            self.dso2lib_pre(dso)
             self.build_dso(dso)
-            self.dso2lib_post(dso)
 
     def _name2file(self, dso, so=False):
         parts = dso.name.split('.')
@@ -221,6 +218,7 @@ class build_dso(dso2libmixin, Command):
 
 
     def build_dso(self, dso):
+        self.dso2lib_pre(dso)
         expand_sources(self, dso.sources)
         expand_sources(self, dso.depends)
 
@@ -299,6 +297,8 @@ class build_dso(dso2libmixin, Command):
             build_temp=self.build_temp,
             target_lang=language)
 
+        self.dso2lib_post(outlib)
+
         if baselib!=solib:
             self.copy_file(outlib, outbaselib) # link="sym" seem to get the target path wrong
 
@@ -335,7 +335,7 @@ class build_ext(dso2libmixin, _build_ext):
 
         _build_ext.build_extension(self, ext)
 
-        self.dso2lib_post(ext)
+        self.dso2lib_post(self.get_ext_fullpath(ext.name))
 
 # Rant:
 #   Arranging for 'build_dso' to be run is seriously annoying!
