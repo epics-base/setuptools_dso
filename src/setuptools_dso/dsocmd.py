@@ -255,6 +255,7 @@ class build_ext(_build_ext):
                 pass
 
             found = False
+            osx_changes = []
             for candidate in dsosearch:
                 C = os.path.join(candidate, libname)
                 if not os.path.isfile(C):
@@ -272,6 +273,8 @@ class build_ext(_build_ext):
                             fullname = os.path.basename(full[0])
                         else:
                             raise RuntimeError("Something wierd happened.  Please report. %s"%full)
+
+                        osx_changes.append(('@loader_path/'+fullname, '@loader_path/%s/%s'%(os.path.relpath(dsopath, mypath), fullname)))
 
                         # -dylib_file A:B asks the linker to do the equivlaent of:
                         #     install_name_tool -change A B
@@ -302,3 +305,12 @@ class build_ext(_build_ext):
         [self.mkpath(D) for D in ext.library_dirs]
 
         _build_ext.build_extension(self, ext)
+
+        if sys.platform == 'darwin':
+            ext_path = self.get_ext_fullpath(ext.name)
+            self.spawn(['otool', '-L', ext_path])
+
+            for old, new in osx_changes:
+                self.spawn(['install_name_tool', '-change', old, new, ext_path])
+
+            self.spawn(['otool', '-L', ext_path])
