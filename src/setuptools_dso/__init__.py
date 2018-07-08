@@ -1,6 +1,6 @@
 
 from setuptools import setup as _setup
-from .dsocmd import DSO, build_dso, build_ext
+from .dsocmd import DSO, Extension, build_dso, build_ext
 
 def setup(**kws):
     cmdclass = kws.get('cmdclass', {})

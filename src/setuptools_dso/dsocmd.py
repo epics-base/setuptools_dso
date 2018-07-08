@@ -1,10 +1,12 @@
 import sys
 import os
 import platform
+import glob
 
 from collections import defaultdict
+from importlib import import_module # say that three times fast...
 
-from setuptools import Command, Distribution, Extension
+from setuptools import Command, Distribution, Extension as _Extension
 from setuptools.command.build_ext import build_ext as _build_ext
 
 from distutils.sysconfig import customize_compiler
@@ -22,14 +24,21 @@ def massage_dir_list(bdir, dirs):
     dirs.extend([os.path.join(bdir, D) for D in dirs if not os.path.isabs(D)])
     return dirs
 
-class DSO(Extension):
+class Extension(_Extension):
+    def __init__(self, name, sources,
+                 dsos=None,
+                 **kws):
+        _Extension.__init__(self, name, sources, **kws)
+        self.dsos = dsos or []
+
+class DSO(_Extension):
     def __init__(self, name, sources,
                  soversion=None,
                  extra_compile_args=None,
                  **kws):
         if not isinstance(extra_compile_args, dict):
             extra_compile_args = {'*':extra_compile_args}
-        Extension.__init__(self, name, sources, extra_compile_args=extra_compile_args, **kws)
+        _Extension.__init__(self, name, sources, extra_compile_args=extra_compile_args, **kws)
         self.soversion = soversion or None
 
 class build_dso(Command):
@@ -221,10 +230,73 @@ class build_ext(_build_ext):
 
         ext.extra_link_args = ext.extra_link_args or []
 
-        if platform.system() == 'Linux':
-            ext.extra_link_args.extend(['-Wl,-rpath,$ORIGIN'])
-        elif sys.platform == 'darwin':
-            pass # TODO: avoid otool games with: -dylib_file <install_name>:@loader_path/<my_rel_path>
+        mypath = os.path.join(*ext.name.split('.')[:-1])
+
+        for dso in getattr(ext, 'dsos', []):
+            log.debug("Will link against DSO %s"%dso)
+
+            parts = dso.split('.')
+            dsopath = os.path.join(*parts[:-1])
+            if sys.platform == "win32":
+                libname = parts[-1]+'.dll'
+            elif sys.platform == 'darwin':
+                libname = 'lib%s.dylib'%parts[-1] # find the plain version first.
+            else:
+                libname = 'lib%s.so'%parts[-1]
+
+            dsosearch = [os.path.join(self.build_lib, *parts[:-1])] # maybe we just built it
+
+            try:
+                # assume this DSO lives in an external package.
+                dsobase = os.path.dirname(import_module(parts[0]).__file__)
+                dsodir = os.path.join(dsobase, *parts[1:-1])
+                dsosearch.append(dsodir)
+            except ImportError:
+                pass
+
+            found = False
+            for candidate in dsosearch:
+                C = os.path.join(candidate, libname)
+                if not os.path.isfile(C):
+                    log.debug("  Not %s"%C)
+                else:
+                    log.debug("  Found %s"%C)
+                    ext.library_dirs.append(candidate)
+
+                    if sys.platform == 'darwin':
+                        # now find the full name of the library (including major version)
+                        full = glob.glob(os.path.join(candidate, 'lib%s.*.dylib'%parts[-1]))
+                        if len(full)==0:
+                            fullname = libname
+                        elif len(full)==1:
+                            fullname = os.path.basename(full[0])
+                        else:
+                            raise RuntimeError("Something wierd happened.  Please report. %s"%full)
+
+                        # -dylib_file A:B asks the linker to do the equivlaent of:
+                        #     install_name_tool -change A B
+                        ext.extra_link_args.extend([
+                            '-v',
+                            '-dylib_file',
+                            '@loader_path/%s:@loader_path/%s/%s'%(fullname, os.path.relpath(dsopath, mypath), fullname),
+                        ])
+
+                    found = True
+                    break
+
+            if not found:
+                raise RuntimeError("Unable to find DSO %s needed by extension %s"%(dso, ext.name))
+
+            ext.libraries.append(parts[-1])
+
+            if platform.system() == 'Linux':
+                ext.extra_link_args.extend(['-Wl,-rpath,$ORIGIN/%s'%os.path.relpath(dsopath, mypath)])
+
+            elif sys.platform == 'darwin':
+                pass # TODO: avoid otool games with: -dylib_file <install_name>:@loader_path/<my_rel_path>
+
+            else:
+                pass # PE has nothing like rpath or install_name, so will have to set PATH when loading
 
         # the Darwin linker errors if given non-existant directories :(
         [self.mkpath(D) for D in ext.library_dirs]

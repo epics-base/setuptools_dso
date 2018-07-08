@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-from setuptools import Extension
-from setuptools_dso import DSO, build_dso, build_ext, setup
+from setuptools_dso import DSO, Extension, build_dso, build_ext, setup
 
-dso = DSO('dsodemo.demo', ['foo.c', 'bar.cpp'],
+dso = DSO('dsodemo.lib.demo', ['foo.c', 'bar.cpp'],
     define_macros = [('BUILD_FOO', None)],
     extra_compile_args = {
         '*':['-DALL'],
@@ -13,15 +12,14 @@ dso = DSO('dsodemo.demo', ['foo.c', 'bar.cpp'],
     soversion='1.0',
 )
 
-ext = Extension('dsodemo.dtest', ['extension.cpp'],
-    library_dirs=['dsodemo'],
-    libraries=['demo'],
+ext = Extension('dsodemo.ext.dtest', ['extension.cpp'],
+    dsos=['dsodemo.lib.demo'],
 )
 
 setup(
     name='dsodemo',
     version="0.1",
-    packages=['dsodemo'],
+    packages=['dsodemo', 'dsodemo.ext'],
     ext_modules = [ext],
     x_dsos = [dso],
 )

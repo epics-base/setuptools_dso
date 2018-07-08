@@ -28,7 +28,7 @@ static struct PyMethodDef dtest_methods[] = {
 #if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef dtestymodule = {
   PyModuleDef_HEAD_INIT,
-    "dsodemo.dtest",
+    "dsodemo.ext.dtest",
     NULL,
     -1,
     dtest_methods,
@@ -47,7 +47,7 @@ PyMOD(dtest)
 #if PY_MAJOR_VERSION >= 3
         PyObject *mod = PyModule_Create(&dtestymodule);
 #else
-        PyObject *mod = Py_InitModule("dsodemo.dtest", dtest_methods);
+        PyObject *mod = Py_InitModule("dsodemo.ext.dtest", dtest_methods);
 #endif
         if(mod) {
         }
