@@ -261,15 +261,16 @@ class build_dso(dso2libmixin, Command):
 
         if sys.platform == 'darwin':
             # we always want to produce relocatable (movable) binaries
-            # TODO: this only works when library and extension are in the same directory
+            # this install_name will be replaced below (cf. 'install_name_tool')
             extra_args.extend(['-install_name', '@loader_path/%s'%os.path.basename(solib)])
-        elif sys.platform != "win32" and baselib!=solib:
-            extra_args.extend(['-Wl,-h,%s'%os.path.basename(solib)])
 
-        if sys.platform == "win32":
+        elif sys.platform == "win32":
             # The .lib is considered "temporary" for extensions, but not for us
             # so we pass export_symbols=None and put it along side the .dll
             extra_args.append('/IMPLIB:%s.lib'%(os.path.splitext(outlib)[0]))
+
+        elif baselib!=solib: # ELF
+            extra_args.extend(['-Wl,-h,%s'%os.path.basename(solib)])
 
         extra_args.extend(dso.extra_link_args or [])
 
@@ -297,10 +298,6 @@ class build_dso(dso2libmixin, Command):
 class build_ext(dso2libmixin, _build_ext):
     def finalize_options(self):
         _build_ext.finalize_options(self)
-
-        # MSVC build puts .lib in build/temp.*
-        # others put .so in build/lib.*
-        #self.lib_temp = self.build_temp if sys.platform == "win32" else self.build_lib
 
         self.include_dirs = massage_dir_list(self.build_temp, self.include_dirs or [])
         self.library_dirs = massage_dir_list(self.build_lib  , self.library_dirs or [])
