@@ -276,13 +276,9 @@ class build_ext(_build_ext):
 
                         osx_changes.append(('@loader_path/'+fullname, '@loader_path/%s/%s'%(os.path.relpath(dsopath, mypath), fullname)))
 
-                        # -dylib_file A:B asks the linker to do the equivlaent of:
+                        # In theory -dylib_file A:B asks the linker to do the equivlaent of:
                         #     install_name_tool -change A B
-                        ext.extra_link_args.extend([
-                            '-v',
-                            '-dylib_file',
-                            '@loader_path/%s:@loader_path/%s/%s'%(fullname, os.path.relpath(dsopath, mypath), fullname),
-                        ])
+                        # But this seems not to work.  So we call install_name_tool below
 
                     found = True
                     break
@@ -295,11 +291,6 @@ class build_ext(_build_ext):
             if platform.system() == 'Linux':
                 ext.extra_link_args.extend(['-Wl,-rpath,$ORIGIN/%s'%os.path.relpath(dsopath, mypath)])
 
-            elif sys.platform == 'darwin':
-                pass # TODO: avoid otool games with: -dylib_file <install_name>:@loader_path/<my_rel_path>
-
-            else:
-                pass # PE has nothing like rpath or install_name, so will have to set PATH when loading
 
         # the Darwin linker errors if given non-existant directories :(
         [self.mkpath(D) for D in ext.library_dirs]
