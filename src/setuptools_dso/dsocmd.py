@@ -57,6 +57,8 @@ class dso2libmixin:
     def dso2lib_pre(self, ext):
         mypath = os.path.join(*ext.name.split('.')[:-1])
 
+        soargs = set()
+
         for dso in getattr(ext, 'dsos', []):
             log.debug("Will link against DSO %s"%dso)
 
@@ -101,7 +103,7 @@ class dso2libmixin:
 
                         self._osx_changes.append(('@loader_path/'+fullname, '@loader_path/%s/%s'%(os.path.relpath(dsopath, mypath), fullname)))
 
-                        # In theory -dylib_file A:B asks the linker to do the equivlaent of:
+                        # In theory '-dylib_file A:B' asks the linker to do the equivlaent of:
                         #     install_name_tool -change A B
                         # But this seems not to work.  So we call install_name_tool below
 
@@ -113,8 +115,10 @@ class dso2libmixin:
 
             ext.libraries.append(parts[-1])
 
-            if platform.system() == 'Linux':
-                ext.extra_link_args.extend(['-Wl,-rpath,$ORIGIN/%s'%os.path.relpath(dsopath, mypath)])
+            if sys.platform not in ('darwin', "win32"):
+                soargs.add('-Wl,-rpath,$ORIGIN/%s'%os.path.relpath(dsopath, mypath))
+
+        ext.extra_link_args.extend(list(soargs))
 
     def dso2lib_post(self, ext):
         if sys.platform == 'darwin':
@@ -267,7 +271,7 @@ class build_dso(dso2libmixin, Command):
         if dso.extra_objects:
             objects.extend(dso.extra_objects)
 
-        extra_args = []
+        extra_args = dso.extra_link_args or []
 
         if sys.platform == 'darwin':
             # we always want to produce relocatable (movable) binaries
@@ -281,8 +285,6 @@ class build_dso(dso2libmixin, Command):
 
         elif baselib!=solib: # ELF
             extra_args.extend(['-Wl,-h,%s'%os.path.basename(solib)])
-
-        extra_args.extend(dso.extra_link_args or [])
 
         language = dso.language or self.compiler.detect_language(sources)
 
