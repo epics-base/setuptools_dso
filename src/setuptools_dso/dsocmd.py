@@ -34,6 +34,13 @@ def expand_sources(cmd, sources):
         cand = os.path.join(cmd.build_temp, src)
         if os.path.exists(cand):
             sources[i] = cand
+            continue
+        if os.name == 'nt':
+            cand = os.path.join(os.path.dirname(cmd.build_temp), src) # strip /Release or /Debug
+            if os.path.exists(cand):
+                sources[i] = cand
+                continue
+        raise RuntimeError("Missing source file: %s"%src)
 
 class Extension(_Extension):
     def __init__(self, name, sources,
