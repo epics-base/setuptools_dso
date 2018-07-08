@@ -8,6 +8,9 @@ from importlib import import_module # say that three times fast...
 
 from setuptools import Command, Distribution, Extension as _Extension
 from setuptools.command.build_ext import build_ext as _build_ext
+from setuptools.command.install import install
+from setuptools.command.egg_info import egg_info as _egg_info
+from distutils.command.build import build
 
 from distutils.sysconfig import customize_compiler
 from distutils.dep_util import newer_group
@@ -133,6 +136,10 @@ class build_dso(dso2libmixin, Command):
 
     boolean_options = ['inplace', 'force']
 
+    # eg. allow injection of extra work (eg. code generation)
+    # before DSOs are built
+    sub_commands = []
+
     def initialize_options (self):
         self.dsos = None
 
@@ -154,6 +161,9 @@ class build_dso(dso2libmixin, Command):
         self.dsos = self.distribution.x_dsos
 
     def run(self):
+        for cmd_name in self.get_sub_commands():
+            self.run_command(cmd_name)
+
         if self.dsos is None:
             log.debug("No DSOs to build")
             return
@@ -296,7 +306,6 @@ class build_ext(dso2libmixin, _build_ext):
         self.library_dirs = massage_dir_list(self.build_lib  , self.library_dirs or [])
 
     def run(self):
-        self.run_command('build_dso')
         # the Darwin linker errors if given non-existant directories :(
         [self.mkpath(D) for D in self.library_dirs]
         _build_ext.run(self)
@@ -315,3 +324,39 @@ class build_ext(dso2libmixin, _build_ext):
         _build_ext.build_extension(self, ext)
 
         self.dso2lib_post(ext)
+
+# Rant:
+#   Arranging for 'build_dso' to be run is seriously annoying!
+#
+#   distutils presents such a simple idea.  We just add 'build_dso' to build.sub_commands.
+#   'install' will first run 'build', and we're done.
+#
+#   Enter setuptools...  setuptools decides to automagically alias 'install' as 'bdist_egg'.
+#   Seriously 'magic', it's inspecting the strack frames...
+#
+#   'bdist_egg' is a special little snowflake (aka. total hack) which doesn't run 'build'
+#   or 'install' (fuck!), but does it's own thing by piecemeal calling
+#   eg. 'egg_info', 'build_clib' (conditionally), 'install_lib'.
+#
+#   'bdist_wheel' is better behaved, and actually runs 'build'.
+#
+# so what to do...
+#
+# 1. insert 'build_dso' before 'build_clib' in the 'build' sequence.
+#    This handles everything except 'bdist_egg' (aka. 'setup.py install')...
+#
+# 2. override 'egg_info' to run 'build_dso' afterwards.
+
+def has_dsos(cmd):
+    return len(getattr(cmd.distribution, 'x_dsos', []))>0
+
+class egg_info(_egg_info):
+    def run(self):
+        _egg_info.run(self)
+        if has_dsos(self):
+            self.run_command('build_dso')
+
+for i,(name,_test) in enumerate(build.sub_commands):
+    if name=='build_clib':
+        build.sub_commands.insert(i, ('build_dso', has_dsos))
+        break
