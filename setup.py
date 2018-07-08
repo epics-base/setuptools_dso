@@ -11,6 +11,7 @@ and packaging them for distribution.  eg. for use by python extensions.
 
 If you have to ask "why", then keep moving along.  There is nothing for you to see here.
 """,
+    url='https://github.com/mdavidsaver/setuptools_dso',
 
     author='Michael Davidsaver',
     author_email='mdavidsaver@gmail.com',
@@ -19,6 +20,9 @@ If you have to ask "why", then keep moving along.  There is nothing for you to s
         'Development Status :: 4 - Beta',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
+        'Intended Audience :: Developers',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: System :: Archiving :: Packaging',
     ],
     python_requires='>=2.7',
 

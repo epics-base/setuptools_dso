@@ -67,10 +67,6 @@ class build_dso(Command):
                                    ('force', 'force'),
                                    )
 
-        # MSVC build puts .lib in build/temp.*
-        # others put .so in build/lib.*
-        self.lib_temp = self.build_temp if sys.platform == "win32" else self.build_lib
-
         self.dsos = self.distribution.x_dsos
 
     def run(self):
@@ -169,9 +165,15 @@ class build_dso(Command):
 
         if sys.platform == 'darwin':
             # we always want to produce relocatable (movable) binaries
+            # TODO: this only works when library and extension are in the same directory
             extra_args.extend(['-install_name', '@loader_path/%s'%os.path.basename(solib)])
         elif sys.platform != "win32" and baselib!=solib:
             extra_args.extend(['-Wl,-h,%s'%os.path.basename(solib)])
+
+        if sys.platform == "win32":
+            # The .lib is considered "temporary" for extensions, but not for us
+            # so we pass export_symbols=None and put it along side the .dll
+            extra_args.append('/IMPLIB:%s.lib'%(os.path.splitext(outlib)[0]))
 
         extra_args.extend(dso.extra_link_args or [])
 
@@ -183,7 +185,7 @@ class build_dso(Command):
             library_dirs=library_dirs,
             runtime_library_dirs=dso.runtime_library_dirs,
             extra_postargs=extra_args,
-            export_symbols=[], #self.get_export_symbols(dso),
+            export_symbols=None,
             #debug=self.debug,
             build_temp=self.build_temp,
             target_lang=language)
@@ -202,10 +204,10 @@ class build_ext(_build_ext):
 
         # MSVC build puts .lib in build/temp.*
         # others put .so in build/lib.*
-        self.lib_temp = self.build_temp if sys.platform == "win32" else self.build_lib
+        #self.lib_temp = self.build_temp if sys.platform == "win32" else self.build_lib
 
         self.include_dirs = massage_dir_list(self.build_temp, self.include_dirs or [])
-        self.library_dirs = massage_dir_list(self.lib_temp  , self.library_dirs or [])
+        self.library_dirs = massage_dir_list(self.build_lib  , self.library_dirs or [])
 
     def run(self):
         self.run_command('build_dso')
@@ -215,12 +217,14 @@ class build_ext(_build_ext):
 
     def build_extension(self, ext):
         ext.include_dirs = massage_dir_list(self.build_temp, ext.include_dirs or [])
-        ext.library_dirs = massage_dir_list(self.lib_temp  , ext.library_dirs or [])
+        ext.library_dirs = massage_dir_list(self.build_lib  , ext.library_dirs or [])
 
         ext.extra_link_args = ext.extra_link_args or []
 
         if platform.system() == 'Linux':
             ext.extra_link_args.extend(['-Wl,-rpath,$ORIGIN'])
+        elif sys.platform == 'darwin':
+            pass # TODO: avoid otool games with: -dylib_file <install_name>:@loader_path/<my_rel_path>
 
         # the Darwin linker errors if given non-existant directories :(
         [self.mkpath(D) for D in ext.library_dirs]
