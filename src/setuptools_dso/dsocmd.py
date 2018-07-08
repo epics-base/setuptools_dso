@@ -35,13 +35,88 @@ class DSO(_Extension):
     def __init__(self, name, sources,
                  soversion=None,
                  extra_compile_args=None,
+                 dsos=None,
                  **kws):
         if not isinstance(extra_compile_args, dict):
             extra_compile_args = {'*':extra_compile_args}
         _Extension.__init__(self, name, sources, extra_compile_args=extra_compile_args, **kws)
         self.soversion = soversion or None
+        self.dsos = dsos or []
 
-class build_dso(Command):
+class dso2libmixin:
+    def dso2lib_pre(self, ext):
+        mypath = os.path.join(*ext.name.split('.')[:-1])
+
+        for dso in getattr(ext, 'dsos', []):
+            log.debug("Will link against DSO %s"%dso)
+
+            parts = dso.split('.')
+            dsopath = os.path.join(*parts[:-1])
+            if sys.platform == "win32":
+                libname = parts[-1]+'.dll'
+            elif sys.platform == 'darwin':
+                libname = 'lib%s.dylib'%parts[-1] # find the plain version first.
+            else:
+                libname = 'lib%s.so'%parts[-1]
+
+            dsosearch = [os.path.join(self.build_lib, *parts[:-1])] # maybe we just built it
+
+            try:
+                # assume this DSO lives in an external package.
+                dsobase = os.path.dirname(import_module(parts[0]).__file__)
+                dsodir = os.path.join(dsobase, *parts[1:-1])
+                dsosearch.append(dsodir)
+            except ImportError:
+                pass
+
+            found = False
+            self._osx_changes = []
+            for candidate in dsosearch:
+                C = os.path.join(candidate, libname)
+                if not os.path.isfile(C):
+                    log.debug("  Not %s"%C)
+                else:
+                    log.debug("  Found %s"%C)
+                    ext.library_dirs.append(candidate)
+
+                    if sys.platform == 'darwin':
+                        # now find the full name of the library (including major version)
+                        full = glob.glob(os.path.join(candidate, 'lib%s.*.dylib'%parts[-1]))
+                        if len(full)==0:
+                            fullname = libname
+                        elif len(full)==1:
+                            fullname = os.path.basename(full[0])
+                        else:
+                            raise RuntimeError("Something wierd happened.  Please report. %s"%full)
+
+                        self._osx_changes.append(('@loader_path/'+fullname, '@loader_path/%s/%s'%(os.path.relpath(dsopath, mypath), fullname)))
+
+                        # In theory -dylib_file A:B asks the linker to do the equivlaent of:
+                        #     install_name_tool -change A B
+                        # But this seems not to work.  So we call install_name_tool below
+
+                    found = True
+                    break
+
+            if not found:
+                raise RuntimeError("Unable to find DSO %s needed by extension %s"%(dso, ext.name))
+
+            ext.libraries.append(parts[-1])
+
+            if platform.system() == 'Linux':
+                ext.extra_link_args.extend(['-Wl,-rpath,$ORIGIN/%s'%os.path.relpath(dsopath, mypath)])
+
+    def dso2lib_post(self, ext):
+        if sys.platform == 'darwin':
+            ext_path = self.get_ext_fullpath(ext.name)
+            self.spawn(['otool', '-L', ext_path])
+
+            for old, new in osx_changes:
+                self.spawn(['install_name_tool', '-change', old, new, ext_path])
+
+            self.spawn(['otool', '-L', ext_path])
+
+class build_dso(dso2libmixin, Command):
     description = "Build Dynamic Shared Object (DSO).  non-python dynamic libraries (.so, .dylib, or .dll)"
 
     user_options = [
@@ -99,7 +174,9 @@ class build_dso(Command):
                     self.compiler.linker_so[i] = '-dynamiclib'
 
         for dso in self.dsos:
+            self.dso2lib_pre(dso)
             self.build_dso(dso)
+            self.dso2lib_post(dso)
 
     def _name2file(self, dso, so=False):
         parts = dso.name.split('.')
@@ -207,7 +284,7 @@ class build_dso(Command):
             if baselib!=solib:
                 self.copy_file(outbaselib, baselib)
 
-class build_ext(_build_ext):
+class build_ext(dso2libmixin, _build_ext):
     def finalize_options(self):
         _build_ext.finalize_options(self)
 
@@ -230,78 +307,11 @@ class build_ext(_build_ext):
 
         ext.extra_link_args = ext.extra_link_args or []
 
-        mypath = os.path.join(*ext.name.split('.')[:-1])
-
-        for dso in getattr(ext, 'dsos', []):
-            log.debug("Will link against DSO %s"%dso)
-
-            parts = dso.split('.')
-            dsopath = os.path.join(*parts[:-1])
-            if sys.platform == "win32":
-                libname = parts[-1]+'.dll'
-            elif sys.platform == 'darwin':
-                libname = 'lib%s.dylib'%parts[-1] # find the plain version first.
-            else:
-                libname = 'lib%s.so'%parts[-1]
-
-            dsosearch = [os.path.join(self.build_lib, *parts[:-1])] # maybe we just built it
-
-            try:
-                # assume this DSO lives in an external package.
-                dsobase = os.path.dirname(import_module(parts[0]).__file__)
-                dsodir = os.path.join(dsobase, *parts[1:-1])
-                dsosearch.append(dsodir)
-            except ImportError:
-                pass
-
-            found = False
-            osx_changes = []
-            for candidate in dsosearch:
-                C = os.path.join(candidate, libname)
-                if not os.path.isfile(C):
-                    log.debug("  Not %s"%C)
-                else:
-                    log.debug("  Found %s"%C)
-                    ext.library_dirs.append(candidate)
-
-                    if sys.platform == 'darwin':
-                        # now find the full name of the library (including major version)
-                        full = glob.glob(os.path.join(candidate, 'lib%s.*.dylib'%parts[-1]))
-                        if len(full)==0:
-                            fullname = libname
-                        elif len(full)==1:
-                            fullname = os.path.basename(full[0])
-                        else:
-                            raise RuntimeError("Something wierd happened.  Please report. %s"%full)
-
-                        osx_changes.append(('@loader_path/'+fullname, '@loader_path/%s/%s'%(os.path.relpath(dsopath, mypath), fullname)))
-
-                        # In theory -dylib_file A:B asks the linker to do the equivlaent of:
-                        #     install_name_tool -change A B
-                        # But this seems not to work.  So we call install_name_tool below
-
-                    found = True
-                    break
-
-            if not found:
-                raise RuntimeError("Unable to find DSO %s needed by extension %s"%(dso, ext.name))
-
-            ext.libraries.append(parts[-1])
-
-            if platform.system() == 'Linux':
-                ext.extra_link_args.extend(['-Wl,-rpath,$ORIGIN/%s'%os.path.relpath(dsopath, mypath)])
-
+        self.dso2lib_pre(ext)
 
         # the Darwin linker errors if given non-existant directories :(
         [self.mkpath(D) for D in ext.library_dirs]
 
         _build_ext.build_extension(self, ext)
 
-        if sys.platform == 'darwin':
-            ext_path = self.get_ext_fullpath(ext.name)
-            self.spawn(['otool', '-L', ext_path])
-
-            for old, new in osx_changes:
-                self.spawn(['install_name_tool', '-change', old, new, ext_path])
-
-            self.spawn(['otool', '-L', ext_path])
+        self.dso2lib_post(ext)
