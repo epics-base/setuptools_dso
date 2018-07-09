@@ -19,16 +19,19 @@ from distutils import log
 
 Distribution.x_dsos = None
 
-def massage_dir_list(bdirs, dirs):
+def massage_dir_list(bdirs, indirs):
     """Process a list of directories for use with -I or -L
     For relative paths, also include paths relative to a build directory
     """
-    dirs = dirs or []
+    indirs = indirs or []
+    dirs = indirs[:]
+
     for bdir in bdirs:
-        dirs.extend([os.path.join(bdir, D) for D in dirs if not os.path.isabs(D)])
+        dirs.extend([os.path.join(bdir, D) for D in indirs if not os.path.isabs(D)])
         if os.name == 'nt':
             bdir = os.path.dirname(bdir) # strip /Release or /Debug
-            dirs.extend([os.path.join(bdir, D) for D in dirs if not os.path.isabs(D)])
+            dirs.extend([os.path.join(bdir, D) for D in indirs if not os.path.isabs(D)])
+
     return list(filter(os.path.isdir, dirs))
 
 def expand_sources(cmd, sources):
