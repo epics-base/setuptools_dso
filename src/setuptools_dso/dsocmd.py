@@ -19,16 +19,17 @@ from distutils import log
 
 Distribution.x_dsos = None
 
-def massage_dir_list(bdir, dirs):
+def massage_dir_list(bdirs, dirs):
     """Process a list of directories for use with -I or -L
     For relative paths, also include paths relative to a build directory
     """
     dirs = dirs or []
-    dirs.extend([os.path.join(bdir, D) for D in dirs if not os.path.isabs(D)])
-    if os.name == 'nt':
-        bdir = os.path.dirname(bdir) # strip /Release or /Debug
+    for bdir in bdirs:
         dirs.extend([os.path.join(bdir, D) for D in dirs if not os.path.isabs(D)])
-    return dirs
+        if os.name == 'nt':
+            bdir = os.path.dirname(bdir) # strip /Release or /Debug
+            dirs.extend([os.path.join(bdir, D) for D in dirs if not os.path.isabs(D)])
+    return list(filter(os.path.isdir, dirs))
 
 def expand_sources(cmd, sources):
     for i,src in enumerate(sources):
@@ -252,8 +253,7 @@ class build_dso(dso2libmixin, Command):
 
         extra_args = dso.extra_compile_args or []
 
-        include_dirs = massage_dir_list(self.build_temp, dso.include_dirs or [])
-        include_dirs += massage_dir_list(self.build_lib, dso.include_dirs or [])
+        include_dirs = massage_dir_list([self.build_temp, self.build_lib], dso.include_dirs or [])
 
         SRC = defaultdict(list)
 
@@ -272,7 +272,7 @@ class build_dso(dso2libmixin, Command):
                                             extra_postargs=extra_args + (dso.lang_compile_args.get(lang) or []),
                                             depends=dso.depends))
 
-        library_dirs = massage_dir_list(self.build_lib, dso.library_dirs or [])
+        library_dirs = massage_dir_list([self.build_lib], dso.library_dirs or [])
 
         # the Darwin linker errors if given non-existant -L directories :(
         [self.mkpath(D) for D in library_dirs]
@@ -322,8 +322,8 @@ class build_ext(dso2libmixin, _build_ext):
     def finalize_options(self):
         _build_ext.finalize_options(self)
 
-        self.include_dirs = massage_dir_list(self.build_temp, self.include_dirs or [])
-        self.library_dirs = massage_dir_list(self.build_lib  , self.library_dirs or [])
+        self.include_dirs = massage_dir_list([self.build_temp], self.include_dirs or [])
+        self.library_dirs = massage_dir_list([self.build_lib]  , self.library_dirs or [])
 
     def run(self):
         # the Darwin linker errors if given non-existant directories :(
@@ -334,8 +334,8 @@ class build_ext(dso2libmixin, _build_ext):
         expand_sources(self, ext.sources)
         expand_sources(self, ext.depends)
 
-        ext.include_dirs = massage_dir_list(self.build_temp, ext.include_dirs or [])
-        ext.library_dirs = massage_dir_list(self.build_lib  , ext.library_dirs or [])
+        ext.include_dirs = massage_dir_list([self.build_temp], ext.include_dirs or [])
+        ext.library_dirs = massage_dir_list([self.build_lib]  , ext.library_dirs or [])
 
         ext.extra_link_args = ext.extra_link_args or []
 
