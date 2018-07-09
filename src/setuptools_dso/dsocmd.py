@@ -253,6 +253,7 @@ class build_dso(dso2libmixin, Command):
         extra_args = dso.extra_compile_args or []
 
         include_dirs = massage_dir_list(self.build_temp, dso.include_dirs or [])
+        include_dirs = massage_dir_list(self.build_lib, include_dirs)
 
         SRC = defaultdict(list)
 
