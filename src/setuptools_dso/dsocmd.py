@@ -372,7 +372,7 @@ class build_ext(dso2libmixin, _build_ext):
 # 2. override 'bdist_egg' to run 'build_dso' at an appropriate point.
 
 def has_dsos(cmd):
-    return len(getattr(cmd.distribution, 'x_dsos', []))>0
+    return len(getattr(cmd.distribution, 'x_dsos', None) or [])>0
 
 class bdist_egg(_bdist_egg):
     # An ugly hack on top of an ugly hack...
