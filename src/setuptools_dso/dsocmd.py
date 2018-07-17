@@ -314,7 +314,11 @@ class build_dso(dso2libmixin, Command):
         self.dso2lib_post(outlib)
 
         if baselib!=solib:
-            self.copy_file(outlib, outbaselib) # link="sym" seem to get the target path wrong
+            # we make best effort here, even though zipfiles (.whl or .egg) will contain copies
+            log.info("symlink %s -> %s", os.path.basename(solib), outlib)
+            if not self.dry_run:
+                os.symlink(os.path.basename(solib), outbaselib)
+            #self.copy_file(outlib, outbaselib) # link="sym" seem to get the target path wrong
 
         if self.inplace:
             self.copy_file(outlib, solib)
