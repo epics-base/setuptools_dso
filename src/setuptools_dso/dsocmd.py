@@ -130,7 +130,16 @@ class dso2libmixin:
             ext.libraries.append(parts[-1])
 
             if sys.platform not in ('darwin', "win32"):
+                # Some versions of GCC will expand shell macros _internally_ when
+                # passing arguments to 'ld', and need '\$ORIGIN'.  And some versions don't,
+                # and fail with '\$ORIGIN'.
+                # Presumably this was a bug in gcc-wrapper which was fixed at some point.
+                #
+                # So what to do?
+                # For lack of a better idea, give both versions and hope that the non-functional
+                # one is really non-functional.
                 soargs.add('-Wl,-rpath,$ORIGIN/%s'%os.path.relpath(dsopath, mypath))
+                soargs.add(r'-Wl,-rpath,\$ORIGIN/%s'%os.path.relpath(dsopath, mypath))
 
         ext.extra_link_args.extend(list(soargs))
 
