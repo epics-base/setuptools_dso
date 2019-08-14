@@ -330,6 +330,7 @@ class build_dso(dso2libmixin, Command):
             #self.copy_file(outlib, outbaselib) # link="sym" seem to get the target path wrong
 
         if self.inplace:
+            self.mkpath(os.path.dirname(solib))
             self.copy_file(outlib, solib)
             if baselib!=solib:
                 self.copy_file(outbaselib, baselib)
