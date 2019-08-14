@@ -293,11 +293,12 @@ class build_dso(dso2libmixin, Command):
             objects.extend(dso.extra_objects)
 
         extra_args = dso.extra_link_args or []
+        solibbase = os.path.basename(solib)
 
         if sys.platform == 'darwin':
             # we always want to produce relocatable (movable) binaries
             # this install_name will be replaced below (cf. 'install_name_tool')
-            extra_args.extend(['-install_name', '@loader_path/%s'%os.path.basename(solib)])
+            extra_args.extend(['-install_name', '@loader_path/%s'%solibbase])
 
         elif sys.platform == "win32":
             # The .lib is considered "temporary" for extensions, but not for us
@@ -305,7 +306,7 @@ class build_dso(dso2libmixin, Command):
             extra_args.append('/IMPLIB:%s.lib'%(os.path.splitext(outlib)[0]))
 
         elif baselib!=solib: # ELF
-            extra_args.extend(['-Wl,-h,%s'%os.path.basename(solib)])
+            extra_args.extend(['-Wl,-h,%s'%solibbase])
 
         language = dso.language or self.compiler.detect_language(sources)
 
@@ -324,9 +325,9 @@ class build_dso(dso2libmixin, Command):
 
         if baselib!=solib:
             # we make best effort here, even though zipfiles (.whl or .egg) will contain copies
-            log.info("symlink %s -> %s", os.path.basename(solib), outlib)
+            log.info("symlink %s -> %s", solibbase, outlib)
             if not self.dry_run:
-                os.symlink(os.path.basename(solib), outbaselib)
+                os.symlink(solibbase, outbaselib)
             #self.copy_file(outlib, outbaselib) # link="sym" seem to get the target path wrong
 
         if self.inplace:
