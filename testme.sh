@@ -27,6 +27,7 @@ cd example
 git clean -fdx	# `setup.py clean` does not clean inplace built files
 "$PYTHON" -m dsodemo.cli 2>/dev/null && die "error: worktree must be clean"
 "$PYTHON" setup.py -v build_dso -i
+"$PYTHON" setup.py -v build_dso -i -f  # incremental recompile
 "$PYTHON" setup.py -v build_ext -i
 "$PYTHON" -m dsodemo.cli
 
