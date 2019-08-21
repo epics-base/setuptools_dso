@@ -4,10 +4,14 @@ from setuptools import setup, Extension
 
 setup(
     name='setuptools_dso',
-    version="1.1",
+    version="1.2",
     description="setuptools extension to build non-python shared libraries",
     long_description="""setuptools extension for building non-python shared libraries
 and packaging them for distribution.  eg. for use by python extensions.
+
+This extension provides at alternative to bundling externally built
+libraries in Python Wheel packages.  This is to replace the external
+build system (eg. Makefile).
 
 If you have to ask "why", then keep moving along.  There is nothing for you to see here.
 """,
