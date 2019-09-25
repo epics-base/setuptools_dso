@@ -1,5 +1,5 @@
 #!/bin/sh
-set -e
+set -e -x
 
 die() {
     echo "$@" 1>&2
@@ -13,32 +13,34 @@ PYTHON="$1"
 
 rm -rf env
 
-virtualenv env
+"$PYTHON" -m virtualenv --no-download -p "$PYTHON" env
 
 . env/bin/activate
+which python
+python --version
 
-"$PYTHON" setup.py clean -a
-"$PYTHON" setup.py -v install
+python setup.py clean -a
+pip install -v .
 
 # inplace build
 echo -e '\n* inplace build\n'
 cd example
-"$PYTHON" setup.py clean -a
+python setup.py clean -a
 git clean -fdx	# `setup.py clean` does not clean inplace built files
-"$PYTHON" -m dsodemo.cli 2>/dev/null && die "error: worktree must be clean"
-"$PYTHON" setup.py -v build_dso -i
-"$PYTHON" setup.py -v build_dso -i -f  # incremental recompile
-"$PYTHON" setup.py -v build_ext -i
-"$PYTHON" -m dsodemo.cli
+python -m dsodemo.cli 2>/dev/null && die "error: worktree must be clean"
+python setup.py -v build_dso -i
+python setup.py -v build_dso -i -f  # incremental recompile
+python setup.py -v build_ext -i
+python -m dsodemo.cli
 
 
 # build + install
 echo -e '\n* build + install\n'
-"$PYTHON" setup.py clean -a
+python setup.py clean -a
 git clean -fdx
-"$PYTHON" -m dsodemo.cli 2>/dev/null && die "error: worktree must be clean"
-"$PYTHON" setup.py -v install
+python -m dsodemo.cli 2>/dev/null && die "error: worktree must be clean"
+pip install -v .
 
 cd ..
 
-"$PYTHON" -m dsodemo.cli
+python -m dsodemo.cli

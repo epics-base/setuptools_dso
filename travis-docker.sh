@@ -26,7 +26,7 @@ do
     cd example
     rm -rf build
     "${PYBIN}/python" setup.py clean -a
-    "${PYBIN}/python" setup.py install --root "$TOP"
+    "${PYBIN}/python" setup.py install --single-version-externally-managed --root "$TOP"
     cd ..
     "${PYBIN}/python" -m dsodemo.cli
 done

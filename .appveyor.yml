@@ -18,7 +18,10 @@ environment:
       PYTHON_ARCH: "64"
 
 install:
+  - SET PATH
   - ps: "ls \"C:/\""
+  - ps: "ls \"C:/Perl/bin\""
+  - ps: "ls \"C:/Perl/site/bin\""
   - ECHO "Installed SDKs:"
   - ps: "ls \"C:/Program Files/Microsoft SDKs/Windows\""
   - ps: if (-not(Test-Path($env:PYTHON))) { & ".\\appveyor_install.ps1" }
