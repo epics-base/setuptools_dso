@@ -69,7 +69,7 @@ class DSO(_Extension):
 
 class dso2libmixin:
     def dso2lib_pre(self, ext):
-        mypath = os.path.join(*ext.name.split('.')[:-1])
+        mypath = os.path.join('.', *ext.name.split('.')[:-1])
 
         soargs = set()
         self._osx_changes = []
@@ -78,7 +78,7 @@ class dso2libmixin:
             log.debug("Will link against DSO %s"%dso)
 
             parts = dso.split('.')
-            dsopath = os.path.join(*parts[:-1])
+            dsopath = os.path.join('.', *parts[:-1])
             if sys.platform == "win32":
                 libname = parts[-1]+'.dll'
             elif sys.platform == 'darwin':
