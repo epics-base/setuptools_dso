@@ -14,10 +14,9 @@ __all__ = (
 )
 
 def setup(**kws):
-    cmdclass = kws.get('cmdclass', {})
-    cmdclass['bdist_egg'] = bdist_egg
-    cmdclass['build_dso'] = build_dso
-    cmdclass['build_ext'] = build_ext
-    kws['cmdclass'] = cmdclass
-    kws['zip_safe'] = kws.get('zip_safe', False) and len(kws.get('ext_modules', []))==0 and len(kws.get('x_dsos', []))==0
+    cmdclass = kws.setdefault('cmdclass', {})
+    cmdclass.setdefault('bdist_egg', bdist_egg)
+    cmdclass.setdefault('build_dso', build_dso)
+    cmdclass.setdefault('build_ext', build_ext)
+    kws.setdefault('zip_safe', len(kws.get('ext_modules', []))==0 and len(kws.get('x_dsos', []))==0)
     _setup(**kws)
