@@ -14,6 +14,9 @@ __all__ = (
 )
 
 def setup(**kws):
+    """Wrapper around setuptools.setup() which injects extra Commands
+       needed to build DSOs.
+    """
     cmdclass = kws.setdefault('cmdclass', {})
     # cmdclass_setdefault sets default to cmdclass[name]=klass and verifies
     # that cmdclass[name] is a subclass of klass. This way we check, for
@@ -29,3 +32,21 @@ def setup(**kws):
     cmdclass_setdefault('build_ext', build_ext)
     kws.setdefault('zip_safe', len(kws.get('ext_modules', []))==0 and len(kws.get('x_dsos', []))==0)
     _setup(**kws)
+
+def cythonize(orig, **kws):
+    """Wrapper around Cython.Build.cythonize() to correct handling of
+    DSO()s and Extension()s using them.
+    """
+    from Cython.Build import cythonize as _cythonize # fails if cython is not actually installed
+    cmods = _cythonize(orig, **kws)
+    for new, old in zip(cmods, orig):
+        if new is old or not isinstance(old, Extension):
+            continue
+        assert isinstance(new, Extension), new
+        # _cythonize() has re-created our Extension.
+        # The correct class is used, but our special attributes are lost.
+        # So we copy them over
+        for key in ('dsos', 'lang_compile_args', 'soversion'):
+            if hasattr(old, key):
+                setattr(new, key, getattr(old, key))
+    return cmods
