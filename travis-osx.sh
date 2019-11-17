@@ -22,6 +22,7 @@ $PYTHON -m pip install --upgrade wheel
 
 
 "$PYTHON" setup.py clean -a
+"$PYTHON" setup.py sdist
 "$PYTHON" setup.py -v install
 
 cd example

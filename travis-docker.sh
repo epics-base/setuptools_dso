@@ -15,6 +15,7 @@ do
 
     rm -rf build
     "${PYBIN}/python" setup.py clean -a
+    "${PYBIN}/python" setup.py sdist
 
     find .
 
