@@ -15,8 +15,17 @@ __all__ = (
 
 def setup(**kws):
     cmdclass = kws.setdefault('cmdclass', {})
-    cmdclass.setdefault('bdist_egg', bdist_egg)
-    cmdclass.setdefault('build_dso', build_dso)
-    cmdclass.setdefault('build_ext', build_ext)
+    # cmdclass_setdefault sets default to cmdclass[name]=klass and verifies
+    # that cmdclass[name] is a subclass of klass. This way we check, for
+    # example, that build_ext overridden by user is not some arbitrary class,
+    # but inherits from setuptools_dso.build_ext, which is required for
+    # setuptools_dso to work correctly.
+    def cmdclass_setdefault(name, klass):
+        cmdclass.setdefault(name, klass)
+        if not issubclass(cmdclass[name], klass):
+            raise AssertionError("cmdclass[%s] must be subclass of %s" % (cmdclass[name], klass))
+    cmdclass_setdefault('bdist_egg', bdist_egg)
+    cmdclass_setdefault('build_dso', build_dso)
+    cmdclass_setdefault('build_ext', build_ext)
     kws.setdefault('zip_safe', len(kws.get('ext_modules', []))==0 and len(kws.get('x_dsos', []))==0)
     _setup(**kws)
