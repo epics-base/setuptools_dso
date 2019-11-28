@@ -5,6 +5,7 @@ import glob
 
 from collections import defaultdict
 from importlib import import_module # say that three times fast...
+from multiprocessing import Pool
 
 from setuptools import Command, Distribution, Extension as _Extension
 from setuptools.command.build_ext import build_ext as _build_ext
@@ -18,6 +19,26 @@ from distutils.util import get_platform
 from distutils import log
 
 Distribution.x_dsos = None
+
+if sys.version_info<(3,4) or platform.system()=='Windows':
+    # bypass multiprocessing optimization (parallel compile)
+    # for older py (can't pickle the necessary pieces)
+    # for windows as freeze_support() is a pain.
+    class Pool(object):
+        def __init__(self, N):
+            pass
+        def __enter__(self):
+            return self
+        def __exit__(self,A,B,C):
+            pass
+        class DummyJob(object):
+            def __init__(self, fn, args, kws):
+                self._F = fn, args, kws
+            def get(self):
+                fn, args, kws = self._F
+                return fn(*args, **kws)
+        def apply_async(self, fn, args, kws):
+            return self.DummyJob(fn, args, kws)
 
 def massage_dir_list(bdirs, indirs):
     """Process a list of directories for use with -I or -L
@@ -275,14 +296,32 @@ class build_dso(dso2libmixin, Command):
 
         # do the actual compiling
         objects = []
-        for lang, srcs in SRC.items():
-            objects.extend(self.compiler.compile(srcs,
-                                            output_dir=self.build_temp,
-                                            macros=macros,
-                                            include_dirs=include_dirs,
-                                            #debug=self.debug,
-                                            extra_postargs=extra_args + (dso.lang_compile_args.get(lang) or []),
-                                            depends=dso.depends))
+
+        if 'NUM_JOBS' in os.environ: # because it is so very cumbersome to pass extra build args through pip and setuptools ...
+            nworkers = int(os.environ['NUM_JOBS'])
+        elif hasattr(os, 'cpu_count'): # py3
+            nworkers = os.cpu_count()
+        else:
+            nworkers = 2 # why not?
+
+        with Pool(nworkers) as P:
+            jobs = []
+            for lang, srcs in SRC.items():
+
+                # submit jobs
+                # allocate every n-th object to the n-th worker.
+                # Load not well balanced, but easy to do.
+                for inputs in [srcs[n::nworkers] for n in range(nworkers)]:
+                    jobs.append(P.apply_async(self.compiler.compile, [inputs], {
+                        'output_dir':self.build_temp,
+                        'macros':macros,
+                        'include_dirs':include_dirs,
+                        'extra_postargs':extra_args + (dso.lang_compile_args.get(lang) or []),
+                        'depends':dso.depends,
+                    }))
+
+            # work for completion
+            [objects.extend(job.get()) for job in jobs]
 
         library_dirs = massage_dir_list([self.build_lib], dso.library_dirs or [])
 
