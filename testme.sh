@@ -27,11 +27,11 @@ echo -e '\n* inplace build\n'
 cd example
 python setup.py clean -a
 git clean -fdx	# `setup.py clean` does not clean inplace built files
-python -m dsodemo.cli 2>/dev/null && die "error: worktree must be clean"
+(cd src && python -m dsodemo.cli 2>/dev/null) && die "error: worktree must be clean"
 python setup.py -v build_dso -i
 python setup.py -v build_dso -i -f  # incremental recompile
 python setup.py -v build_ext -i
-python -m dsodemo.cli
+(cd src && python -m dsodemo.cli)
 
 
 # build + install

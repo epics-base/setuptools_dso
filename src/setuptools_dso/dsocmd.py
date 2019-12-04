@@ -333,10 +333,17 @@ class build_dso(dso2libmixin, Command):
             #self.copy_file(outlib, outbaselib) # link="sym" seem to get the target path wrong
 
         if self.inplace:
-            self.mkpath(os.path.dirname(solib))
-            self.copy_file(outlib, solib)
+            build_py = self.get_finalized_command('build_py')
+            pkg = '.'.join(dso.name.split('.')[:-1])    # path.to.dso -> path.to
+            pkgdir = build_py.get_package_dir(pkg)      # path.to -> src/path/to
+
+            solib_dst   = os.path.join(pkgdir, os.path.basename(solib))     # path/to/dso.so -> src/path/to/dso.so
+            baselib_dst = os.path.join(pkgdir, os.path.basename(baselib))
+
+            self.mkpath(os.path.dirname(solib_dst))
+            self.copy_file(outlib, solib_dst)
             if baselib!=solib:
-                self.copy_file(outbaselib, baselib)
+                self.copy_file(outbaselib, baselib_dst)
 
 class build_ext(dso2libmixin, _build_ext):
     def finalize_options(self):

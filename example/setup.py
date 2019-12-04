@@ -2,7 +2,7 @@
 
 from setuptools_dso import DSO, Extension, build_dso, build_ext, setup
 
-dso = DSO('dsodemo.lib.demo', ['foo.c', 'bar.cpp'],
+dso = DSO('dsodemo.lib.demo', ['src/foo.c', 'src/bar.cpp'],
     define_macros = [('BUILD_FOO', None)],
     extra_compile_args = ['-DALL'],
     lang_compile_args = {
@@ -12,7 +12,7 @@ dso = DSO('dsodemo.lib.demo', ['foo.c', 'bar.cpp'],
     soversion='1.0',
 )
 
-ext = Extension('dsodemo.ext.dtest', ['extension.cpp'],
+ext = Extension('dsodemo.ext.dtest', ['src/extension.cpp'],
     dsos=['dsodemo.lib.demo'],
 )
 
@@ -21,6 +21,7 @@ setup(
     version="0.1",
     setup_requires = ['setuptools_dso'],
     packages=['dsodemo', 'dsodemo.ext'],
+    package_dir={'': 'src'},
     ext_modules = [ext],
     x_dsos = [dso],
 )
