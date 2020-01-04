@@ -1,4 +1,7 @@
 
+from __future__ import print_function
+
+import os
 from setuptools import setup as _setup
 from .dsocmd import DSO, Extension, build_dso, build_ext, bdist_egg
 
@@ -33,11 +36,37 @@ def setup(**kws):
     kws.setdefault('zip_safe', len(kws.get('ext_modules', []))==0 and len(kws.get('x_dsos', []))==0)
     _setup(**kws)
 
+try:
+    from Cython.Build import cythonize as _cythonize
+except ImportError:
+    def _cythonize(extensions, **kws):
+        """dummy cythonize() used when Cython not installed.
+        Assumes that generated source files are distributed.
+        Cython docs say "It is strongly recommended that you
+        distribute the generated .c ...".
+        """
+        print("Cython not installed.  Trying to use dummy cythonize()")
+        for E in extensions:
+            srcs = []
+            for src in E.sources:
+                # how to match up .pyx with .c or .cpp ?
+                # there are (at least) three ways to specify language.
+                # kws['language'], E.language, and as a directive in the .pyx
+                # This last is not something we can detect, so try to guess.
+                base, ext = os.path.splitext(src)
+                if ext=='.pyx':
+                    if os.path.isfile(base+'.cpp'):
+                        src = base+'.cpp'
+                    else:
+                        src = base+'.c'
+                srcs.append(src)
+            E.sources[:] = srcs
+        return extensions
+
 def cythonize(orig, **kws):
     """Wrapper around Cython.Build.cythonize() to correct handling of
     DSO()s and Extension()s using them.
     """
-    from Cython.Build import cythonize as _cythonize # fails if cython is not actually installed
     cmods = _cythonize(orig, **kws)
     for new, old in zip(cmods, orig):
         if new is old or not isinstance(old, Extension):
