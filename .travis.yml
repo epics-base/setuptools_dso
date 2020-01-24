@@ -66,5 +66,5 @@ after_success:
   - |
     if [ "$TRAVIS_TAG" -a "$TWINE_USERNAME" ] ; then
       echo "Deploying"
-      ${PYTHON:-python} -m twine upload --skip-existing dist/*.tar.* dist/*.whl || true
+      ${PYTHON:-python} -m twine upload --skip-existing dist/*.tar.* || true
     fi
