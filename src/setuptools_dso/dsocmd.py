@@ -6,6 +6,7 @@ import glob
 from collections import defaultdict
 from importlib import import_module # say that three times fast...
 from multiprocessing import Pool
+import multiprocessing as MP
 
 from setuptools import Command, Distribution, Extension as _Extension
 from setuptools.command.build_ext import build_ext as _build_ext
@@ -20,10 +21,13 @@ from distutils import log
 
 Distribution.x_dsos = None
 
-if sys.version_info<(3,4) or platform.system()=='Windows':
+if sys.version_info<(3,4) or MP.get_start_method()!='fork':
     # bypass multiprocessing optimization (parallel compile)
     # for older py (can't pickle the necessary pieces)
-    # for windows as freeze_support() is a pain.
+    # freeze_support() is a pain, and is needed by methods other than 'fork'.
+    # Contrary to documentation, this is not limited to Windows.
+    # https://bugs.python.org/issue32146
+    # https://bugs.python.org/issue33725
     class Pool(object):
         def __init__(self, N):
             pass
