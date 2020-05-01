@@ -140,9 +140,7 @@ class dso2libmixin:
                         else:
                             raise RuntimeError("Something wierd happened.  Please report. %s"%full)
 
-                        p = os.path.relpath(dsopath, mypath)
-                        if p != '.':
-                            soargs.add('-Wl,-rpath,@loader_path/%s' % p)
+                        soargs.add('-Wl,-rpath,@loader_path/%s' % os.path.relpath(dsopath, mypath))
 
                         # In theory '-dylib_file A:B' asks the linker to do the equivlaent of:
                         #     install_name_tool -change A B
@@ -343,7 +341,7 @@ class build_dso(dso2libmixin, Command):
         if sys.platform == 'darwin':
             # we always want to produce relocatable (movable) binaries
             # this install_name will be replaced below (cf. 'install_name_tool')
-            extra_args.extend(['-install_name', '@rpath/%s'%solibbase, '-Wl,-rpath,@loader_path'])
+            extra_args.extend(['-install_name', '@rpath/%s'%solibbase])
 
         elif sys.platform == "win32":
             # The .lib is considered "temporary" for extensions, but not for us
