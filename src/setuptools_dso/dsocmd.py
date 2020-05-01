@@ -97,7 +97,6 @@ class dso2libmixin:
         mypath = os.path.join('.', *ext.name.split('.')[:-1])
 
         soargs = set()
-        self._osx_changes = []
 
         for dso in getattr(ext, 'dsos', []):
             log.debug("Will link against DSO %s"%dso)
@@ -140,12 +139,6 @@ class dso2libmixin:
                         else:
                             raise RuntimeError("Something wierd happened.  Please report. %s"%full)
 
-                        soargs.add('-Wl,-rpath,@loader_path/%s' % os.path.relpath(dsopath, mypath))
-
-                        # In theory '-dylib_file A:B' asks the linker to do the equivlaent of:
-                        #     install_name_tool -change A B
-                        # But this seems not to work.  So we call install_name_tool below
-
                     found = True
                     break
 
@@ -154,7 +147,13 @@ class dso2libmixin:
 
             ext.libraries.append(parts[-1])
 
-            if sys.platform not in ('darwin', "win32"):
+            if sys.platform=='win32':
+                pass # nothing line -rpath available
+
+            elif sys.platform=='darwin':
+                soargs.add('-Wl,-rpath,@loader_path/%s' % os.path.relpath(dsopath, mypath))
+
+            else:
                 # Some versions of GCC will expand shell macros _internally_ when
                 # passing arguments to 'ld', and need '\$ORIGIN'.  And some versions don't,
                 # and fail with '\$ORIGIN'.
@@ -170,11 +169,6 @@ class dso2libmixin:
 
     def dso2lib_post(self, ext_path):
         if sys.platform == 'darwin':
-            self.spawn(['otool', '-L', ext_path])
-
-            for old, new in self._osx_changes:
-                self.spawn(['install_name_tool', '-change', old, new, ext_path])
-
             self.spawn(['otool', '-L', ext_path])
 
 class build_dso(dso2libmixin, Command):
