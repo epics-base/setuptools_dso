@@ -4,7 +4,7 @@ from setuptools import setup, Extension
 
 setup(
     name='setuptools_dso',
-    version="1.6",
+    version="1.7",
     description="setuptools extension to build non-python shared libraries",
     long_description="""setuptools extension for building non-python shared libraries
 and packaging them for distribution.  eg. for use by python extensions.
@@ -21,12 +21,14 @@ If you have to ask "why", then keep moving along.  There is nothing for you to s
     author_email='mdavidsaver@gmail.com',
     license='BSD',
     classifiers = [
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Archiving :: Packaging',
+        'Framework :: Setuptools Plugin',
+        'License :: OSI Approved :: BSD License',
     ],
     python_requires='>=2.7',
 
