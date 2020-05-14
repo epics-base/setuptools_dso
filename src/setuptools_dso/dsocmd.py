@@ -12,7 +12,6 @@ from setuptools import Command, Distribution, Extension as _Extension
 from setuptools.command.build_ext import build_ext as _build_ext
 from setuptools.command.install import install
 from setuptools.command.bdist_egg import bdist_egg as _bdist_egg
-from distutils.command.build import build
 
 from distutils.sysconfig import customize_compiler
 from distutils.dep_util import newer_group
@@ -446,7 +445,24 @@ class bdist_egg(_bdist_egg):
         if cmd=='egg_info' and has_dsos(self):
             self.run_command('build_dso')
 
-for i,(name,_test) in enumerate(build.sub_commands):
-    if name=='build_clib':
-        build.sub_commands.insert(i, ('build_dso', has_dsos))
-        break
+# _needs_builddso marks distutils/setuptools command to depend on build_dso.
+#
+# if right_before is specified build_dso is injected before that command
+# instead of as first dependency.
+def _needs_builddso(command, right_before=None):
+    assert issubclass(command, Command)
+    # copy to avoid changing base class if sub_commands was just inherited
+    _ = command.sub_commands[:]
+    where = 0
+    if right_before is not None:
+        for i,(name,_test) in enumerate(_):
+            if name == right_before:
+                where = i
+                break
+        else:
+            raise AssertionError("command %r does not have %r subcommand" % (command, right_before))
+    _.insert(where, ('build_dso', has_dsos))
+    command.sub_commands = _
+
+from distutils.command.build import build
+_needs_builddso(build, right_before='build_clib')
