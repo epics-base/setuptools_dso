@@ -382,6 +382,10 @@ class build_dso(dso2libmixin, Command):
                 self.copy_file(outbaselib, baselib_dst)
 
 class build_ext(dso2libmixin, _build_ext):
+
+    # allow build_ext to depend on other commands
+    sub_commands = _build_ext.sub_commands[:]
+
     def finalize_options(self):
         _build_ext.finalize_options(self)
 
@@ -389,6 +393,10 @@ class build_ext(dso2libmixin, _build_ext):
         self.library_dirs = massage_dir_list([self.build_lib]  , self.library_dirs or [])
 
     def run(self):
+        # original setuptools/distutils don't call sub_commands for build_ext
+        for cmd_name in self.get_sub_commands():
+            self.run_command(cmd_name)
+
         # the Darwin linker errors if given non-existant directories :(
         [self.mkpath(D) for D in self.library_dirs]
         _build_ext.run(self)
@@ -466,3 +474,13 @@ def _needs_builddso(command, right_before=None):
 
 from distutils.command.build import build
 _needs_builddso(build, right_before='build_clib')
+
+
+# depend build_ext: build_dso, for DSOs to be automatically built on
+# `setup.py develop` (= `pip install -e`).
+#
+# `setup.py develop` does not call build and instead calls `build_ext -i`
+# directly without providing any kind of sub_commands support.
+#
+# -> so we hook into build_ext to make sure build_dso is also called.
+_needs_builddso(build_ext)

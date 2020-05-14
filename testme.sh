@@ -44,3 +44,17 @@ pip install -v .
 cd ..
 
 python -m dsodemo.cli
+
+
+# install in development mode
+pip uninstall -y dsodemo
+python -m dsodemo.cli 2>/dev/null && die "error: dsodemo not uninstalled"
+
+cd example
+python setup.py clean -a
+git clean -fdx
+(cd src && python -m dsodemo.cli 2>/dev/null) && die "error: worktree must be clean"
+pip install -v -e .
+
+cd ..
+python -m dsodemo.cli
