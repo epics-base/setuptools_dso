@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from setuptools_dso import DSO, Extension, build_dso, build_ext, setup
+from setuptools_dso import DSO, Extension, setup
 
 dso = DSO('dsodemo.lib.demo', ['src/foo.c', 'src/bar.cpp'],
     define_macros = [('BUILD_FOO', None)],
