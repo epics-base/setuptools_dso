@@ -119,7 +119,6 @@ class dso2libmixin:
             except ImportError:
                 pass
 
-            found = False
             for candidate in dsosearch:
                 C = os.path.join(candidate, libname)
                 if not os.path.isfile(C):
@@ -127,21 +126,8 @@ class dso2libmixin:
                 else:
                     log.debug("  Found %s"%C)
                     ext.library_dirs.append(candidate)
-
-                    if sys.platform == 'darwin':
-                        # now find the full name of the library (including major version)
-                        full = glob.glob(os.path.join(candidate, 'lib%s.*.dylib'%parts[-1]))
-                        if len(full)==0:
-                            fullname = libname
-                        elif len(full)==1:
-                            fullname = os.path.basename(full[0])
-                        else:
-                            raise RuntimeError("Something wierd happened.  Please report. %s"%full)
-
-                    found = True
                     break
-
-            if not found:
+            else:
                 raise RuntimeError("Unable to find DSO %s needed by extension %s"%(dso, ext.name))
 
             ext.libraries.append(parts[-1])
