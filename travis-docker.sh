@@ -6,11 +6,10 @@ cd /io
 echo "============================================================"
 
 BASE="$PYTHONPATH"
-TOP="$PWD/root"
 
 for PYBIN in /opt/python/*/bin
 do
-    rm -rf "$TOP" build repo
+    rm -rf build repo
     export PYTHONPATH="$BASE"
 
     # needed for isolated wheel build
@@ -30,4 +29,6 @@ do
 
     "${PYBIN}/python" -m pip install -v --no-index -f repo dsodemo
     "${PYBIN}/python" -m dsodemo.cli
+
+    "${PYBIN}/python" -m pip uninstall -y dsodemo
 done
