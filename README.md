@@ -8,6 +8,7 @@ build system (eg. Makefile).
 
 See [example/setup.py](example/setup.py) for usage.
 
+![setuptools-dso](https://github.com/mdavidsaver/setuptools_dso/workflows/setuptools-dso/badge.svg)
 
 ## Use case and mechanics
 
