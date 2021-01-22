@@ -29,6 +29,18 @@ requires = ["setuptools", "wheel", "setuptools_dso"]
 
 This ensures that `setuptools_dso` is available to be imported by `setup.py`.
 
+### MANIFEST.in
+
+Add a `MANIFEST.in` to ensure that `setup.py sdist` includes everything necessary
+for a successful source build.
+
+```
+include pyproject.toml
+include src/*.h
+include src/*.c
+include src/*.cpp
+```
+
 ### Building a DSO
 
 The [source](example/src/) files while make up the non-python `demo` library are: `mylib.h`, `foo.c`, `bar.cpp`.
