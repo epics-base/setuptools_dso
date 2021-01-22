@@ -9,11 +9,29 @@ built from source within the python ecosystem.
 
 See [example/setup.py](example/setup.py) for a working example.
 
-![setuptools-dso](https://github.com/mdavidsaver/setuptools_dso/workflows/setuptools-dso/badge.svg)
+[![setuptools-dso](https://github.com/mdavidsaver/setuptools_dso/workflows/setuptools-dso/badge.svg)](https://github.com/mdavidsaver/setuptools_dso/actions)
+
+## Building packages
+
+Packages using `setuptools_dso` can for the most part be treated like any other python package.
+Distribution through [pypi.org](https://pypi.org/) as source and/or binary (wheels) is possible.
+Like other packages containing compiled code, use of egg binaries is not supported.
+
+Use of PIP is encouraged.
+The `setuptools_dso` package needs to be installed when manually invoking `setup.py` scripts in dependent packages.
+eg. to generate source tars with `setup.py sdist`.
+
+Developers wishing to work with an in-place build will need to use the added `build_dso` command,
+which functions like the `build_ext` command.
+
+```sh
+python setup.py build_dso -i
+python setup.py build_ext -i
+```
 
 ## Usage
 
-The [example/](example/setup.py) demonstrates building a non-python library,
+The [example/](example/) demonstrates building a non-python library,
 and linking it with a python extension module.
 
 ### pyproject.toml
@@ -99,7 +117,7 @@ when the `dsodemo.ext.dtest` Extension is imported on Windows.
 The example places this in [`example/src/dsodemo/__init__.py`](example/src/dsodemo/__init__.py)
 to ensure it always runs before the extension library is loaded.
 
-```
+```py
 import sys, os
 
 def fixpath():
@@ -146,7 +164,7 @@ The supporting library is then linked with a library name of `libsup.so.0`
 (eg. `gcc -o libsup.so.0 -shared -Wl,-soname,libsup.so.0 ...`)
 
 When linking a dependent library or extension module `-Wl,-rpath,'$ORIGIN/lib'`
-is given since the relative path from _ext.so to libsup.so.0 is './lib'.
+is given since the relative path from `_ext.so` to `libsup.so.0` is `./lib`.
 
 Note that on Linux runtime linking is really a function of the libc (eg. glibc).
 
@@ -163,8 +181,8 @@ Then `-Wl,-rpath,'$ORIGIN/lib'` becomes `-Wl,-rpath,@loader_path/lib`.
 There is no equivalent for RPATH.
 It is necessary to adjust the loader search path to include the directory
 containing the support library dll explicitly from python code prior to loading the extension.
-(eg. from an \_\_init\_\_.py)
+(eg. from an `__init__.py`)
 
-With older versions of Windows it is sufficient to adjust %PATH%.
-Newer versions require use of the `AddDllDirectory()` API call.
+With earlier versions of Windows it is sufficient to adjust `%PATH%`.
+Recent versions require use of the `AddDllDirectory()` API call.
 Python wraps this as `os.add_dll_directory()`.
