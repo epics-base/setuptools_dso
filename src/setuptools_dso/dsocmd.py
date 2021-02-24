@@ -93,6 +93,7 @@ class DSO(_Extension):
 
 class dso2libmixin:
     def dso2lib_pre(self, ext):
+        # ext may be our Extension or DSO
         mypath = os.path.join('.', *ext.name.split('.')[:-1])
 
         soargs = set()
@@ -112,7 +113,7 @@ class dso2libmixin:
             dsosearch = [os.path.join(self.build_lib, *parts[:-1])] # maybe we just built it
 
             try:
-                # assume this DSO lives in an external package.
+                # also check if this DSO lives in an external package.
                 dsobase = os.path.dirname(import_module(parts[0]).__file__)
                 dsodir = os.path.join(dsobase, *parts[1:-1])
                 dsosearch.append(dsodir)
@@ -224,6 +225,9 @@ class build_dso(dso2libmixin, Command):
             self.build_dso(dso)
 
     def _name2file(self, dso, so=False):
+        """Translate DSO name (eg. "pkg.mod.mylib" into
+        "pkg/mod/mylib.so" or (if so==True) "pkg/mod/mylib.so.0"
+        """
         parts = dso.name.split('.')
 
         if sys.platform == "win32":
@@ -245,13 +249,16 @@ class build_dso(dso2libmixin, Command):
 
 
     def build_dso(self, dso):
+        # dso is an instance of DSO
         self.dso2lib_pre(dso)
         expand_sources(self, dso.sources)
         expand_sources(self, dso.depends)
 
-        baselib = self._name2file(dso)
-        solib = self._name2file(dso, so=True)
+        baselib = self._name2file(dso)        # eg. "pkg/mod/mylib.so"
+        solib = self._name2file(dso, so=True) # eg. "pkg/mod/mylib.so.0"
+        # on windows always baselib==solib
 
+        # prepend staging area path
         outbaselib = os.path.join(self.build_lib, baselib)
         outlib = os.path.join(self.build_lib, solib)
         sources = list(dso.sources)
@@ -315,7 +322,7 @@ class build_dso(dso2libmixin, Command):
             objects.extend(dso.extra_objects)
 
         extra_args = dso.extra_link_args or []
-        solibbase = os.path.basename(solib)
+        solibbase = os.path.basename(solib) # eg. "mylib.so.0"
 
         if sys.platform == 'darwin':
             # we always want to produce relocatable (movable) binaries
@@ -325,6 +332,7 @@ class build_dso(dso2libmixin, Command):
         elif sys.platform == "win32":
             # The .lib is considered "temporary" for extensions, but not for us
             # so we pass export_symbols=None and put it along side the .dll
+            # eg. "pkg\mod\mylib.dll" and "pkg\mod\mylib.lib"
             extra_args.append('/IMPLIB:%s.lib'%(os.path.splitext(outlib)[0]))
 
         elif baselib!=solib: # ELF
