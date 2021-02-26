@@ -68,6 +68,7 @@ eg. the result of `dsodemo.lib.demo` will be eg. `dsodemo/lib/libdemo.so` or `ds
 installed in the python module tree along-side any other python code or C extensions.
 
 Note that there need not be a `dsodemo/lib/__init__.py` as `dsodemo.lib` need not be a python package.
+However, if this file is present, then the generated `dsodemo/lib/demo_dso.py` will be accessible.
 
 ```py
 from setuptools_dso import DSO, Extension, setup
@@ -81,7 +82,7 @@ setup(
 )
 ```
 
-The `DSO` constructor understands all of the same keyword arguments as `setuptools.Extension`
+The `DSO` constructor understands the same keyword arguments as `setuptools.Extension`
 and [`distutils.core.Extension`](https://docs.python.org/3/distutils/apiref.html#distutils.core.Extension),
 with the addition of `dsos=[...]`, `soversion='...'`, and `lang_compile_args={'...':'...'}`.
 
@@ -110,24 +111,46 @@ setup(
 )
 ```
 
+### Cython
+
+Version 1.3 added a `setuptools_dso.cythonize()` wrapper to correctly handle `Extension(dso=...)`.
+
 ### Runtime
 
-Some additional runtime preparation is need to in order to find the `'dsodemo.lib.demo'` library
+Beginning with setuptools-dso 2.0 a file `*_dso.py` will be generated alongside each DSO.
+eg. dso `mypkg.lib.thelib` will create `mypkg/lib/thelib_dso.py`.
+If `mypkg.lib` is a valid python packages (contains `__init__.py`)
+then `mypkg.lib.thelib_dso.py` can be imported, and will contain the attributes:
+
+- `.dsoname`    eg. "mypkg.lib.thelib"
+- `.libname`    eg. "thelib.so"
+- `.soname`     eg. "thelib.so.0"
+- `.filename`   eg. "/full/path/to/thelib.so"
+- `.sofilename` eg. "/full/path/to/thelib.so.0"
+
+Beginning with 2.0 `os.add_dll_directory()` is called by the generated `*_dso.py` module.
+Prior to 2.0, or if the generated module is not used,
+some additional runtime preparation is needed in order to find the `'dsodemo.lib.demo'` library
 when the `dsodemo.ext.dtest` Extension is imported on Windows.
-The example places this in [`example/src/dsodemo/__init__.py`](example/src/dsodemo/__init__.py)
+This could be placed in eg. `example/src/dsodemo/__init__.py`
 to ensure it always runs before the extension library is loaded.
 
 ```py
 import sys, os
 
 def fixpath():
-    path = os.environ.get('PATH', '').split(os.pathsep)
+    # If this file is
+    #   .../__init__.py
+    # DSOs are under
+    #   .../lib/
     libdir = os.path.join(os.path.dirname(__file__), 'lib')
-    path.append(libdir)
-    os.environ['PATH'] = os.pathsep.join(path)
 
     if hasattr(os, 'add_dll_directory'):
         os.add_dll_directory(libdir)
+    else:
+        path = os.environ.get('PATH', '').split(os.pathsep)
+        path.append(libdir)
+        os.environ['PATH'] = os.pathsep.join(path)
 
 if sys.platform == "win32":
     fixpath()
@@ -136,7 +159,7 @@ if sys.platform == "win32":
 ## Mechanics
 
 Libraries build with setuptools-dso will typically be linked, directly or indirectly, to python extension modules.
-Such libraries should loaded implicitly when the extension module is imported by the python runtime.
+Such libraries should be loaded implicitly when the extension module is imported by the python runtime.
 For this to work the OS runtime loader must be able to find these libraries.
 This is complicated by OS differences, and a desire to support virtualenv and similar.
 
@@ -186,3 +209,45 @@ containing the support library dll explicitly from python code prior to loading 
 With earlier versions of Windows it is sufficient to adjust `%PATH%`.
 Recent versions require use of the `AddDllDirectory()` API call.
 Python wraps this as `os.add_dll_directory()`.
+
+## Changelog
+
+### 2.0 (UNRELEASED)
+
+- Generate info module for each DSO (Kaleb Barrett)
+
+### 1.7 (May 2020)
+
+- Fix support for develop install (pip install -e).  (Kirill Smelkov)
+
+### 1.6 (May 2020)
+
+- Use @rpath as install_name prefix on MacOS (Mehul Tikekar)
+
+### 1.5 (Jan. 2020)
+
+- Correct parallel compile on Mac
+
+### 1.4 (Jan. 2020)
+
+- Take package_dir into account (Kirill Smelkov)
+- Parallel compile of DSO source when supported (py >= 3.4 and not windows)
+- Fake `cythonize()` wrapper when Cython not installed
+
+### 1.3 (Nov. 2019)
+
+- Handle DSO in root (not in a package)
+- setup() wrapper correct 'cmdclass' handling (Kirill Smelkov)
+- Add `setuptools_dso.cythonize()` wrapper
+
+### 1.2 (Aug. 2019)
+
+- Add LICENSE and COPYRIGHT to MANIFEST
+
+### 1.1 (Aug. 2019)
+
+- Fix inplace build (Kirill Smelkov)
+
+### 1.0 (Oct. 2018)
+
+- Initial Release
