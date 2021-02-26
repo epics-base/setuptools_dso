@@ -21,6 +21,8 @@
 extern "C" {
 #endif
 
+MYLIB_API extern int myvar;
+
 MYLIB_API const char* foo(void);
 
 #ifdef __cplusplus

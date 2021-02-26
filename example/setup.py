@@ -28,7 +28,7 @@ setup(
     # setup/build time dependencies listed in pyproject.toml
     # cf. PEP 518
     #setup_requires = ['setuptools_dso'],
-    packages=['dsodemo', 'dsodemo.ext'],
+    packages=['dsodemo', 'dsodemo.ext', 'dsodemo.lib'],
     package_dir={'': 'src'},
     ext_modules = [ext],
     x_dsos = [dso],
