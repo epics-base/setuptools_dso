@@ -85,11 +85,13 @@ class DSO(_Extension):
                  soversion=None,
                  lang_compile_args=None,
                  dsos=None,
+                 dso_info_module_name="{}_dso.py",
                  **kws):
         _Extension.__init__(self, name, sources, **kws)
         self.lang_compile_args = lang_compile_args or {}
         self.soversion = soversion or None
         self.dsos = dsos or []
+        self.dso_info_module_name = dso_info_module_name
 
 class dso2libmixin:
     def dso2lib_pre(self, ext):
@@ -223,6 +225,7 @@ class build_dso(dso2libmixin, Command):
 
         for dso in self.dsos:
             self.build_dso(dso)
+            self.gen_info_module(dso)
 
     def _name2file(self, dso, so=False):
         """Translate DSO name (eg. "pkg.mod.mylib" into
@@ -230,23 +233,32 @@ class build_dso(dso2libmixin, Command):
         """
         parts = dso.name.split('.')
 
-        if sys.platform == "win32":
-            parts[-1] = parts[-1]+'.dll'
-
-        elif sys.platform == 'darwin':
-            if so and dso.soversion is not None:
-                parts[-1] = 'lib%s.%s.dylib'%(parts[-1], dso.soversion)
-            else:
-                parts[-1] = 'lib%s.dylib'%(parts[-1],)
-
-        else: # ELF
-            if so and dso.soversion is not None:
-                parts[-1] = 'lib%s.so.%s'%(parts[-1], dso.soversion)
-            else:
-                parts[-1] = 'lib%s.so'%(parts[-1],)
+        parts[-1] = self._name2libname(dso, so)
 
         return os.path.join(*parts)
 
+    def _name2libname(self, dso, so=False):
+        """
+        Translate DSO name to library name
+
+        For example, DSO "mylib" on Linux would return "libmylib.so".
+        """
+        parts = dso.name.split('.')
+
+        if sys.platform == "win32":
+            return parts[-1]+'.dll'
+
+        elif sys.platform == 'darwin':
+            if so and dso.soversion is not None:
+                return 'lib%s.%s.dylib'%(parts[-1], dso.soversion)
+            else:
+                return 'lib%s.dylib'%(parts[-1],)
+
+        else: # ELF
+            if so and dso.soversion is not None:
+                return 'lib%s.so.%s'%(parts[-1], dso.soversion)
+            else:
+                return 'lib%s.so'%(parts[-1],)
 
     def build_dso(self, dso):
         # dso is an instance of DSO
@@ -374,6 +386,57 @@ class build_dso(dso2libmixin, Command):
             self.copy_file(outlib, solib_dst)
             if baselib!=solib:
                 self.copy_file(outbaselib, baselib_dst)
+
+    def gen_info_module(self, dso):
+        if dso.dso_info_module_name is None:
+            log.debug("skiping creation of info module")
+            return
+
+        parts = dso.name.split(".")
+
+        info_module_filename = os.path.join(
+            os.path.join(self.build_lib, *parts[:-1]),
+            dso.dso_info_module_name.format(parts[-1]),
+        )
+
+        log.info(
+            "creating info module for {dso_name} at {filename}".format(
+                dso_name=dso.name, filename=info_module_filename
+            )
+        )
+
+        if not self.dry_run:
+            import textwrap
+
+            with open(info_module_filename, "w") as file:
+                file.write(
+                    textwrap.dedent(
+                        """
+                    import os.path
+                    import sys
+                    dir = os.path.dirname(__file__)
+                    if sys.platform == 'win32':
+                        os.add_dll_directory(dir)
+                    dsoname = {dsoname!r}
+                    libname = {libname!r}
+                    filename = os.path.join(dir, libname)
+                    __all__ = ("dsoname", "libname", "filename")
+                    """
+                    ).format(dsoname=dso.name, libname=self._name2libname(dso))
+                )
+
+        if self.inplace:
+            build_py = self.get_finalized_command("build_py")
+            pkg = ".".join(parts[:-1])  # path.to.dso -> path.to
+            pkgdir = build_py.get_package_dir(pkg)  # path.to -> src/path/to
+
+            info_module_dest = os.path.join(
+                pkgdir, os.path.basename(info_module_filename)
+            )
+
+            self.mkpath(os.path.dirname(info_module_dest))
+            self.copy_file(info_module_filename, info_module_dest)
+
 
 class build_ext(dso2libmixin, _build_ext):
 
