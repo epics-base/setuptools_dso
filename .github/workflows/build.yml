@@ -2,6 +2,10 @@ name: setuptools-dso
 
 on: [push, pull_request]
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
@@ -27,7 +31,22 @@ jobs:
           python --version
           python -m pip --version
       - name: Test
-        run: pip install -v .
+        run: |
+          # capture other deps
+          pip download -d dist setuptools wheel
+          python setup.py sdist --formats=gztar
+          ls dist
+          # build from source tar to ensure completeness
+          pip install -v --no-index -f dist setuptools_dso
+      - name: Test Example wheel
+        run: |
+          ls dist
+          cd example
+          python setup.py clean -a
+          git clean -fdx .
+          pip install -v --no-index -f ../dist .
+          cd ..
+          python -m dsodemo.cli
       - name: Test Example inplace
         run: |
           cd example
@@ -38,14 +57,6 @@ jobs:
           python setup.py -v build_ext -i
           (cd src && python -m dsodemo.cli)
           cd ..
-      - name: Test Example wheel
-        run: |
-          cd example
-          python setup.py clean -a
-          git clean -fdx .
-          pip install -v .
-          cd ..
-          python -m dsodemo.cli
 
   upload:
     runs-on: ubuntu-latest
