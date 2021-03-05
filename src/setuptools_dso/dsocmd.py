@@ -85,7 +85,7 @@ class DSO(_Extension):
                  soversion=None,
                  lang_compile_args=None,
                  dsos=None,
-                 dso_info_module_name="{}_dso.py",
+                 dso_info_module_name="{}_dsoinfo.py",
                  **kws):
         _Extension.__init__(self, name, sources, **kws)
         self.lang_compile_args = lang_compile_args or {}

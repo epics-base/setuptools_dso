@@ -68,7 +68,7 @@ eg. the result of `dsodemo.lib.demo` will be eg. `dsodemo/lib/libdemo.so` or `ds
 installed in the python module tree along-side any other python code or C extensions.
 
 Note that there need not be a `dsodemo/lib/__init__.py` as `dsodemo.lib` need not be a python package.
-However, if this file is present, then the generated `dsodemo/lib/demo_dso.py` will be accessible.
+However, if this file is present, then the generated `dsodemo/lib/demo_dsoinfo.py` will be accessible.
 
 ```py
 from setuptools_dso import DSO, Extension, setup
@@ -117,10 +117,10 @@ Version 1.3 added a `setuptools_dso.cythonize()` wrapper to correctly handle `Ex
 
 ### Runtime
 
-Beginning with setuptools-dso 2.0 a file `*_dso.py` will be generated alongside each DSO.
-eg. dso `mypkg.lib.thelib` will create `mypkg/lib/thelib_dso.py`.
+Beginning with setuptools-dso 2.0 a file `*_dsoinfo.py` will be generated alongside each DSO.
+eg. dso `mypkg.lib.thelib` will create `mypkg/lib/thelib_dsoinfo.py`.
 If `mypkg.lib` is a valid python packages (contains `__init__.py`)
-then `mypkg.lib.thelib_dso.py` can be imported, and will contain the attributes:
+then `mypkg.lib.thelib_dsoinfo` can be imported, and will contain the attributes:
 
 - `.dsoname`    eg. "mypkg.lib.thelib"
 - `.libname`    eg. "thelib.so"
@@ -128,7 +128,7 @@ then `mypkg.lib.thelib_dso.py` can be imported, and will contain the attributes:
 - `.filename`   eg. "/full/path/to/thelib.so"
 - `.sofilename` eg. "/full/path/to/thelib.so.0"
 
-Beginning with 2.0 `os.add_dll_directory()` is called by the generated `*_dso.py` module.
+Beginning with 2.0 `os.add_dll_directory()` is called by the generated `*_dsoinfo.py` module.
 Prior to 2.0, or if the generated module is not used,
 some additional runtime preparation is needed in order to find the `'dsodemo.lib.demo'` library
 when the `dsodemo.ext.dtest` Extension is imported on Windows.
