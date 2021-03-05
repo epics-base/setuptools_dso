@@ -39,7 +39,7 @@ echo -e '\n* build + install\n'
 python setup.py clean -a
 git clean -fdx
 python -m dsodemo.cli 2>/dev/null && die "error: worktree must be clean"
-pip install -v .
+pip install --no-build-isolation -v .
 
 cd ..
 
@@ -54,7 +54,7 @@ cd example
 python setup.py clean -a
 git clean -fdx
 (cd src && python -m dsodemo.cli 2>/dev/null) && die "error: worktree must be clean"
-pip install -v -e .
+pip install --no-build-isolation -v -e .
 
 cd ..
 python -m dsodemo.cli
