@@ -20,8 +20,11 @@ __all__ = (
 )
 
 def setup(**kws):
-    """Wrapper around setuptools.setup() which injects extra Commands
-       needed to build DSOs.
+    """setup(..., x_dsos=[DSO(...)])
+    Wrapper around setuptools.setup() which injects extra Commands needed to build DSOs.
+    Unknown keywords are passed through.
+
+    :param x_dsos: A list of :py:class:`DSO` instances.
     """
     cmdclass = kws.setdefault('cmdclass', {})
     # cmdclass_setdefault sets default to cmdclass[name]=klass and verifies
@@ -43,7 +46,7 @@ try:
     from Cython.Build import cythonize as _cythonize
 except ImportError:
     def _cythonize(extensions, **kws):
-        """dummy cythonize() used when Cython not installed.
+        """Dummy cythonize() used when Cython not installed.
         Assumes that generated source files are distributed.
         Cython docs say "It is strongly recommended that you
         distribute the generated .c ...".
@@ -68,7 +71,7 @@ except ImportError:
 
 def cythonize(orig, **kws):
     """Wrapper around Cython.Build.cythonize() to correct handling of
-    DSO()s and Extension()s using them.
+    :py:class:`DSO` s and :py:class:`Extension` s using them.
     """
     cmods = _cythonize(orig, **kws)
     for new, old in zip(cmods, orig):

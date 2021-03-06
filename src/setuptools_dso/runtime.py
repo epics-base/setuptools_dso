@@ -62,11 +62,19 @@ def _auto_pkg():
     return caller_mod.__name__
 
 def import_dsoinfo(dso, package=None):
-    """Import and return info module for the named DSO
+    """Import and return "info" module for the named DSO.
 
     :param str dso: DSO name string (eg. 'my.pkg.libs.adso').
     :param str package: Package name to resolve relative imports.  cf. importlib.import_module
     :returns: Info module
+
+    For example, on a ELF target the "info" module for a DSO "mypkg.lib.thelib" would contain the attributes:
+
+    - `.dsoname`    eg. "mypkg.lib.thelib"
+    - `.libname`    eg. "thelib.so"
+    - `.soname`     eg. "thelib.so.0"
+    - `.filename`   eg. "/full/path/to/thelib.so"
+    - `.sofilename` eg. "/full/path/to/thelib.so.0"
     """
     if package is None:
         package = _auto_pkg()
@@ -107,10 +115,10 @@ def find_dso(dso, package=None, so=True):
                     No effect on Windows.
     :returns: Absolute path string of DSO file.
 
-    eg.
+    eg. ::
 
-    >>> fname = setuptools_dso.find_dso('my.pkg.libs.adso')
-    >>> lib = ctypes.CDLL(fname, , ctypes.RTLD_GLOBAL)
+        fname = setuptools_dso.find_dso('my.pkg.libs.adso')
+        lib = ctypes.CDLL(fname, ctypes.RTLD_GLOBAL)
     """
     if package is None:
         package = _auto_pkg()
@@ -119,7 +127,7 @@ def find_dso(dso, package=None, so=True):
 
 
 
-def cli_info(args):
+def _cli_info(args):
     mod = import_dsoinfo(args.dso)
     if args.var:
         print(getattr(mod, args.var))
@@ -137,7 +145,7 @@ def getargs():
     S = SP.add_parser('info')
     S.add_argument('dso')
     S.add_argument('var', nargs='?')
-    S.set_defaults(func=cli_info)
+    S.set_defaults(func=_cli_info)
 
     return P
 

@@ -16,6 +16,9 @@ build system (eg. Makefile).
 If you have to ask "why", then keep moving along.  There is nothing for you to see here.
 """,
     url='https://github.com/mdavidsaver/setuptools_dso',
+    project_urls={
+        'Documentation':'https://mdavidsaver.github.io/setuptools_dso',
+    },
 
     author='Michael Davidsaver',
     author_email='mdavidsaver@gmail.com',

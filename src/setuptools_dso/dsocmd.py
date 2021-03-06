@@ -18,6 +18,14 @@ from distutils.dep_util import newer_group
 from distutils.util import get_platform
 from distutils import log
 
+__all__ = (
+    'DSO',
+    'Extension',
+    'build_dso',
+    'build_ext',
+    'bdist_egg',
+)
+
 Distribution.x_dsos = None
 
 if sys.version_info<(3,4) or MP.get_start_method()!='fork':
@@ -74,6 +82,11 @@ def expand_sources(cmd, sources):
         raise RuntimeError("Missing source file: %s"%src)
 
 class Extension(_Extension):
+    """Extension(name, sources, ..., dsos=[DSO(...)])
+    Wrapper around setuptools.Extension which accepts a list of :py:class:`DSO` dependencies.
+
+    :param dsos: A list of :py:class:`DSO` s which this Extension will be linked against.
+    """
     def __init__(self, name, sources,
                  dsos=None,
                  **kws):
@@ -81,6 +94,21 @@ class Extension(_Extension):
         self.dsos = dsos or []
 
 class DSO(_Extension):
+    """DSO(name, sources, ..., dsos=[DSO(...)], soversion=None)
+    A Dynamic Shared Object to be built.
+    Accepts the same options as :py:class:`Extension` with additions:
+
+    :param dsos: A list of :py:class:`DSO` s which this DSO will be linked against.
+    :param str soversion: None (default) or a string.  On supported targerts, this string
+                          which will be appended to create the SONAME.  eg. ``soversion="0"``
+                          will turn ``libfoo.so`` into ``libfoo.so.0``.
+    :param dict lang_compile_args: Language specific ("c" or "c++") compiler flags.
+                                   eg. ``{'c':['-DMAGIC']}``
+    :param str gen_info: Controls generation of "info" module.
+                         True (default) uses the conventional filename,
+                         False disableds generation,
+                         or a string to use a specific filename.
+    """
     def __init__(self, name, sources,
                  soversion=None,
                  lang_compile_args=None,
