@@ -9,4 +9,4 @@ build/
 /env/
 *.egg-info/
 
-*_dso.py
+*_dsoinfo.py

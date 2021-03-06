@@ -28,6 +28,8 @@ setup(
     # setup/build time dependencies listed in pyproject.toml
     # cf. PEP 518
     #setup_requires = ['setuptools_dso'],
+    # also need at runtime for DSO filename lookup since demo uses ctypes
+    install_requires = ['setuptools_dso'],
     packages=['dsodemo', 'dsodemo.ext', 'dsodemo.lib'],
     package_dir={'': 'src'},
     ext_modules = [ext],

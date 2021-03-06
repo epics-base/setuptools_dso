@@ -4,6 +4,7 @@ from __future__ import print_function
 import os
 from setuptools import setup as _setup
 from .dsocmd import DSO, Extension, build_dso, build_ext, bdist_egg
+from .runtime import dylink_prepare_dso, find_dso
 
 from setuptools.command.install import install
 
@@ -14,6 +15,8 @@ __all__ = (
     'build_ext',
     'bdist_egg',
     'setup',
+    'dylink_prepare_dso',
+    'find_dso',
 )
 
 def setup(**kws):

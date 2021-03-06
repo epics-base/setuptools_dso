@@ -1,2 +1,2 @@
-# import calls os.add_dll_directory() on windows
-from ..lib import demo_dsoinfo
+from setuptools_dso import dylink_prepare_dso
+dylink_prepare_dso('..lib.demo')
