@@ -85,13 +85,13 @@ class DSO(_Extension):
                  soversion=None,
                  lang_compile_args=None,
                  dsos=None,
-                 dso_info_module_name="{}_dsoinfo.py",
+                 gen_info=True,
                  **kws):
         _Extension.__init__(self, name, sources, **kws)
         self.lang_compile_args = lang_compile_args or {}
         self.soversion = soversion or None
         self.dsos = dsos or []
-        self.dso_info_module_name = dso_info_module_name
+        self.gen_info = gen_info
 
 class dso2libmixin:
     def dso2lib_pre(self, ext):
@@ -388,16 +388,18 @@ class build_dso(dso2libmixin, Command):
                 self.copy_file(outbaselib, baselib_dst)
 
     def gen_info_module(self, dso):
-        if dso.dso_info_module_name is None:
+        if not dso.gen_info:
             log.debug("skiping creation of info module")
             return
 
         parts = dso.name.split(".")
+        infoparts = parts[:-1]
+        if dso.gen_info is True:
+            infoparts.append(parts[-1]+"_dsoinfo.py")
+        else:
+            infoparts.append(dso.gen_info)
 
-        info_module_filename = os.path.join(
-            os.path.join(self.build_lib, *parts[:-1]),
-            dso.dso_info_module_name.format(parts[-1]),
-        )
+        info_module_filename = os.path.join(self.build_lib, *infoparts)
 
         log.info(
             "creating info module for {dso_name} at {filename}".format(
