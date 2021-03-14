@@ -106,8 +106,8 @@ class DSO(_Extension):
                                    eg. ``{'c':['-DMAGIC']}``
     :param str gen_info: Controls generation of "info" module.
                          True (default) uses the conventional filename,
-                         False disableds generation,
-                         or a string to use a specific filename.
+                         False disables generation,
+                         or a specific filename string.
     """
     def __init__(self, name, sources,
                  soversion=None,

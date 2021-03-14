@@ -18,8 +18,8 @@ which functions like the ``build_ext`` command. ::
     python setup.py build_dso -i
     python setup.py build_ext -i
 
-Usage
------
+Applying to your package
+========================
 
 The `example/ <https://github.com/mdavidsaver/setuptools_dso/tree/master/example>`_ demonstrates building a non-python library,
 and linking it with a python extension module.
@@ -29,10 +29,9 @@ pyproject.toml
 
 To properly support ``pip install ...``, it is recommended to include a
 `pyproject.toml <https://www.python.org/dev/peps/pep-0518/>`_
-file containing at least: ::
+file containing at least:
 
-    [build-system]
-    requires = ["setuptools", "wheel", "setuptools_dso"]
+.. literalinclude:: ../example/pyproject.toml
 
 This ensures that ``setuptools_dso`` is available to be imported by ``setup.py``.
 
@@ -40,15 +39,12 @@ MANIFEST.in
 ^^^^^^^^^^^
 
 Add a ``MANIFEST.in`` to ensure that ``setup.py sdist`` includes everything necessary
-for a successful source build. ::
+for a successful source build.
 
-    include pyproject.toml
-    include src/*.h
-    include src/*.c
-    include src/*.cpp
+.. literalinclude:: ../example/MANIFEST.in
 
 Building a DSO
-^^^^^^^^^^^^^^
+--------------
 
 .. autofunction:: setup
 
@@ -84,7 +80,7 @@ one :py:class:`DSO` to be linked against others.
 eg. ``dsos=['some.lib.foo']`` will result in something like ``gcc ... -L.../some/lib -lfoo``.
 
 Building an Extension
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 
 .. autoclass:: Extension
 
@@ -105,14 +101,14 @@ The named ``DSO`` may be built by the same ``setup.py``, or may already be prese
     )
 
 Cython
-^^^^^^
+------
 
 .. autofunction:: cythonize
 
 Version 1.3 added a :py:func:`setuptools_dso.cythonize()` wrapper to correctly handle ``Extension(dso=...)``.
 
 Runtime
--------
+=======
 
 Beginning with setuptools-dso 2.0 a file ``*_dsoinfo.py`` will be generated alongside each DSO.
 eg. dso ``"mypkg.lib.thelib"`` will create ``mypkg/lib/thelib_dsoinfo.py``.
@@ -158,7 +154,7 @@ to ensure it always runs before the extension library is loaded. ::
         fixpath()
 
 Use with ctypes
-^^^^^^^^^^^^^^^
+---------------
 
 .. autofunction:: find_dso
 
