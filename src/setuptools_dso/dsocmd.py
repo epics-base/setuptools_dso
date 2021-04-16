@@ -127,6 +127,8 @@ class dso2libmixin:
         mypath = os.path.join('.', *ext.name.split('.')[:-1])
 
         soargs = set()
+        solibs = []
+        sodirs = []
 
         for dso in getattr(ext, 'dsos', []):
             log.debug("Will link against DSO %s"%dso)
@@ -156,12 +158,12 @@ class dso2libmixin:
                     log.debug("  Not %s"%C)
                 else:
                     log.debug("  Found %s"%C)
-                    ext.library_dirs.append(candidate)
+                    sodirs.append(candidate)
                     break
             else:
                 raise RuntimeError("Unable to find DSO %s needed by extension %s"%(dso, ext.name))
 
-            ext.libraries.append(parts[-1])
+            solibs.append(parts[-1])
 
             if sys.platform=='win32':
                 pass # nothing line -rpath available
@@ -181,8 +183,12 @@ class dso2libmixin:
                 soargs.add('-Wl,-rpath,$ORIGIN/%s'%os.path.relpath(dsopath, mypath))
                 soargs.add(r'-Wl,-rpath,\$ORIGIN/%s'%os.path.relpath(dsopath, mypath))
 
-        ext.extra_link_args.extend(list(soargs))
-
+        # Do not append to extisting list as it may be shared
+        # between multiple extensions
+        ext.libraries = ext.libraries + solibs
+        ext.library_dirs = ext.library_dirs + sodirs
+        ext.extra_link_args = ext.extra_link_args + list(soargs)                
+        
     def dso2lib_post(self, ext_path):
         if sys.platform == 'darwin':
             self.spawn(['otool', '-L', ext_path])
