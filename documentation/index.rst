@@ -26,4 +26,5 @@ allowing non-python libraries to be built from source within a python ecosystem.
    :maxdepth: 2
 
    usage
+   probe
    details
