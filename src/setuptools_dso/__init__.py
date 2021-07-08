@@ -39,6 +39,12 @@ def setup(**kws):
     cmdclass_setdefault('bdist_egg', bdist_egg)
     cmdclass_setdefault('build_dso', build_dso)
     cmdclass_setdefault('build_ext', build_ext)
+    try:
+        from .dsocmd import bdist_wheel
+    except ImportError:
+        pass # wheel not installed
+    else:
+        cmdclass_setdefault('bdist_wheel', bdist_wheel)
     kws.setdefault('zip_safe', len(kws.get('ext_modules', []))==0 and len(kws.get('x_dsos', []))==0)
     _setup(**kws)
 

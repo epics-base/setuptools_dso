@@ -8,6 +8,11 @@ from importlib import import_module # say that three times fast...
 from multiprocessing import Pool
 import multiprocessing as MP
 
+try:
+    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+except ImportError:
+    _bdist_wheel = None
+
 from setuptools import Command, Distribution, Extension as _Extension
 from setuptools.command.build_ext import build_ext as _build_ext
 from setuptools.command.install import install
@@ -517,6 +522,22 @@ class build_ext(dso2libmixin, _build_ext):
         _build_ext.build_extension(self, ext)
 
         self.dso2lib_post(self.get_ext_fullpath(ext.name))
+
+if _bdist_wheel:
+    class bdist_wheel(_bdist_wheel):
+        """Since 'auditwheel' doesn't understand the idea of non-python libraries in the python tree,
+           we provide an alternate way to handling changing the platform tag on Linux by environment
+           variable.  eg.
+
+           $ SETUPTOOLS_DSO_MANYLINUX=manylinux2014 pip install .
+        """
+        def get_tag(self):
+            impl, abi_tag, plat_name = _bdist_wheel.get_tag(self)
+            # So far PIP doesn't clear the environment for sandbox builds...
+            linuxtag = os.environ.get('SETUPTOOLS_DSO_MANYLINUX', '')
+            if linuxtag and plat_name.startswith('linux_'):
+                plat_name = plat_name.replace('linux', linuxtag) # eg. 'linux_x86_64' -> 'manylinux1_x86_64'
+            return (impl, abi_tag, plat_name)
 
 # Rant:
 #   Arranging for 'build_dso' to be run is seriously annoying!
