@@ -43,6 +43,19 @@ for a successful source build.
 
 .. literalinclude:: ../example/MANIFEST.in
 
+Using with manylinux
+^^^^^^^^^^^^^^^^^^^^
+
+Using of **auditwheel** with wheel builds from setuptools_dso can cause problems
+as auditwheel has no concept of non-python libraries in python packages.
+
+If **$SETUPTOOLS_DSO_MANYLINUX** contains a manylinux name, setuptools_dso will
+inject this name when building wheels.
+Currently PIP version <=21 will pass this environment variable through to PEP 517 builds.
+eg. ::
+
+    SETUPTOOLS_DSO_MANYLINUX=manylinux1 pip wheel -w dist .
+
 Building a DSO
 --------------
 
