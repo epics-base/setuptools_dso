@@ -155,6 +155,10 @@ class ProbeToolchain(object):
         with open(obj, 'rb') as F:
             raw = F.read()
 
+        if raw.find(b'\x01\x01\x01P\x01\x01\x01R\x01\x01\x01O\x01\x01\x01B\x01\x01\x01E\x01\x01\x01I\x01\x01\x01N\x01\x01\x01F\x01\x01\x01O')!=-1:
+            # MSVC
+            raw = raw.replace(b'\x01\x01\x01', b'')
+
         M = re.match(b'.*PROBEINFO\\[(\\d+)\\].*', raw, re.DOTALL)
         if M is None:
             print(repr(raw))
