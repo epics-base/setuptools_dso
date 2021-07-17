@@ -1,6 +1,18 @@
 #!/usr/bin/env python
 
 from setuptools_dso import DSO, Extension, setup
+from setuptools_dso.probe import ProbeToolchain
+
+# example of inspecting the target toolchain
+probe = ProbeToolchain()
+assert probe.try_compile('#include <stdlib.h>')
+assert not probe.try_compile('intentionally invalid syntax')
+assert probe.check_include('stdlib.h')
+assert not probe.check_include('no-such-header.h')
+assert probe.sizeof('short')==2
+assert probe.check_symbol('RAND_MAX', headers=['stdlib.h'])
+assert probe.check_symbol('abort', headers=['stdlib.h'])
+assert not probe.check_symbol('intentionally_undeclared_symbol', headers=['stdlib.h'])
 
 dso = DSO('dsodemo.lib.demo', ['src/foo.c', 'src/bar.cpp'],
     define_macros = [('BUILD_FOO', None)],
