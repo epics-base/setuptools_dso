@@ -531,12 +531,21 @@ if _bdist_wheel:
 
            $ SETUPTOOLS_DSO_MANYLINUX=manylinux2014 pip install .
         """
+
+        def finalize_options(self):
+            _bdist_wheel.finalize_options(self)
+            # wheels with DSO are not "pure" python
+            self.root_is_pure &= not has_dsos(self)
+
         def get_tag(self):
             impl, abi_tag, plat_name = _bdist_wheel.get_tag(self)
+
+            log.info('Wheel Tag: %s, %s, %s'%(impl, abi_tag, plat_name))
             # So far PIP doesn't clear the environment for sandbox builds...
             linuxtag = os.environ.get('SETUPTOOLS_DSO_MANYLINUX', '')
             if linuxtag and plat_name.startswith('linux_'):
                 plat_name = plat_name.replace('linux', linuxtag) # eg. 'linux_x86_64' -> 'manylinux1_x86_64'
+
             return (impl, abi_tag, plat_name)
 
 # Rant:
