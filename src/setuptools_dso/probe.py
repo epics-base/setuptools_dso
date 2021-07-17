@@ -23,7 +23,7 @@ except ImportError:
 
 from distutils.ccompiler import new_compiler
 from distutils.sysconfig import customize_compiler
-from distutils.errors import CompileError
+from distutils.errors import DistutilsExecError, CompileError
 from distutils import log
 
 __all__ = (
@@ -99,7 +99,7 @@ class ProbeToolchain(object):
         try:
             self.compile(src, **kws)
             return True
-        except CompileError as e:
+        except (DistutilsExecError, CompileError) as e:
             return False
 
     def check_includes(self, headers, **kws):
