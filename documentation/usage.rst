@@ -120,6 +120,8 @@ Cython
 
 Version 1.3 added a :py:func:`setuptools_dso.cythonize()` wrapper to correctly handle ``Extension(dso=...)``.
 
+.. _dsoinfo:
+
 Runtime
 =======
 
@@ -174,4 +176,6 @@ Use with ctypes
 Info
 ^^^^
 
-.. autofunction:: setuptools_dso.runtime.import_dsoinfo
+.. currentmodule:: setuptools_dso.runtime
+
+.. autofunction:: import_dsoinfo

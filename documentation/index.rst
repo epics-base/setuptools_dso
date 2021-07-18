@@ -28,3 +28,4 @@ allowing non-python libraries to be built from source within a python ecosystem.
    usage
    probe
    details
+   releasenotes
