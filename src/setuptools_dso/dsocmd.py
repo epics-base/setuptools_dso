@@ -529,7 +529,7 @@ if _bdist_wheel:
            we provide an alternate way to handling changing the platform tag on Linux by environment
            variable.  eg.
 
-           $ SETUPTOOLS_DSO_MANYLINUX=manylinux2014 pip install .
+           $ SETUPTOOLS_DSO_PLAT_NAME=manylinux2014_x86_64 pip install .
         """
 
         def finalize_options(self):
@@ -539,12 +539,11 @@ if _bdist_wheel:
 
         def get_tag(self):
             impl, abi_tag, plat_name = _bdist_wheel.get_tag(self)
+            log.info('Original Wheel Tag: %s, %s, %s'%(impl, abi_tag, plat_name))
 
-            log.info('Wheel Tag: %s, %s, %s'%(impl, abi_tag, plat_name))
             # So far PIP doesn't clear the environment for sandbox builds...
-            linuxtag = os.environ.get('SETUPTOOLS_DSO_MANYLINUX', '')
-            if linuxtag and plat_name.startswith('linux_'):
-                plat_name = plat_name.replace('linux', linuxtag) # eg. 'linux_x86_64' -> 'manylinux1_x86_64'
+            # allow mangling of platform name.  eg. 'linux_x86_64' -> 'manylinux1_x86_64'
+            plat_name = os.environ.get('SETUPTOOLS_DSO_PLAT_NAME', plat_name)
 
             return (impl, abi_tag, plat_name)
 

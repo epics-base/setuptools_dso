@@ -109,18 +109,20 @@ jobs:
           set -e -x
           cd /io
           export PATH="/opt/python/${{ matrix.pyver }}/bin:\$PATH"
-          export SETUPTOOLS_DSO_MANYLINUX="${{ matrix.manylinux }}"
           which python
 
-          pip download -d dist setuptools wheel
+          python -m pip download -d dist setuptools wheel nose2
           python setup.py sdist --formats=gztar
-          pip install -v --no-index -f dist dist/setuptools_dso-*.tar.*
+          python -m pip wheel -v --no-index -w dist -f dist dist/setuptools_dso-*.tar.*
+          python -m pip install -v --no-index -f dist nose2 setuptools-dso
+
+          export SETUPTOOLS_DSO_PLAT_NAME="${{ matrix.manylinux }}_${{ matrix.piparch }}"
 
           cd example
           python setup.py sdist --formats=gztar
-          pip wheel -w ../dist -f ../dist --no-index dist/dsodemo-*.tar.*
+          python -m pip wheel -w ../dist -f ../dist --no-index dist/dsodemo-*.tar.*
 
-          pip install -f ../dist --no-index ../dist/dsodemo*${{ matrix.manylinux }}_${{ matrix.piparch }}*.whl
+          python -m pip install -f ../dist --no-index ../dist/dsodemo*${{ matrix.manylinux }}_${{ matrix.piparch }}*.whl
 
           cd dist
           python -m dsodemo.cli
