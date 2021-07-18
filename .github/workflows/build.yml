@@ -27,28 +27,37 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Builder Info
         run: |
+          set -x
           which python
           python --version
           python -m pip --version
       - name: Test
+        shell: bash
         run: |
+          set -x
           # capture other deps
-          pip download -d dist setuptools wheel
+          pip download -d dist setuptools wheel nose2
+          python -m pip install -v --no-index -f dist setuptools wheel nose2
           python setup.py sdist --formats=gztar
           ls dist
           # build from source tar to ensure completeness
-          pip install -v --no-index -f dist setuptools_dso
+          python -m pip install -v --no-index -f dist setuptools_dso
       - name: Test Example wheel
+        shell: bash
         run: |
+          set -x
           ls dist
           cd example
           python setup.py clean -a
           git clean -fdx .
-          pip install -v --no-index -f ../dist .
+          python -m pip install -v --no-index -f ../dist .
           cd ..
           python -m dsodemo.cli
+          python -m nose2 dsodemo
       - name: Test Example inplace
+        shell: bash
         run: |
+          set -x
           cd example
           python setup.py clean -a
           git clean -fdx .
@@ -112,20 +121,25 @@ jobs:
           which python
 
           python -m pip download -d dist setuptools wheel nose2
+          python -m pip install -v --no-index -f dist setuptools wheel nose2
+
           python setup.py sdist --formats=gztar
-          python -m pip wheel -v --no-index -w dist -f dist dist/setuptools_dso-*.tar.*
-          python -m pip install -v --no-index -f dist nose2 setuptools-dso
+          python -m pip wheel -v --no-index -w dist -f dist setuptools_dso
 
           export SETUPTOOLS_DSO_PLAT_NAME="${{ matrix.manylinux }}_${{ matrix.piparch }}"
 
           cd example
-          python setup.py sdist --formats=gztar
-          python -m pip wheel -w ../dist -f ../dist --no-index dist/dsodemo-*.tar.*
+          python -m pip install -v --no-index -f ../dist setuptools_dso
+          python setup.py sdist -d ../dist --formats=gztar
+          cd ..
 
-          python -m pip install -f ../dist --no-index ../dist/dsodemo*${{ matrix.manylinux }}_${{ matrix.piparch }}*.whl
+          ls dist
+
+          python -m pip install -f dist --no-index dsodemo
 
           cd dist
           python -m dsodemo.cli
+          python -m nose2 dsodemo
 
           EOF
           cat runit.sh
@@ -149,21 +163,26 @@ jobs:
           pip install setuptools wheel twine
           twine -h
       - name: setup.py sdist
+        shell: bash
         run: |
           echo "Event: ${{ github.event_name }}"
           echo "Ref: ${{ github.ref }}"
+          set -x
+          python -m pip install -U pip
+          python -m pip install setuptools wheel
           python setup.py sdist
-          ls dist/setuptools_dso-*.tar.*
+          python -m pip wheel -w dist dist/setuptools_dso-*.tar.*
+          ls dist/setuptools_dso-*
           tar -taf dist/setuptools_dso-*.tar.*
-      - name: Save tar
+      - name: Save
         uses: actions/upload-artifact@v2
         with:
-          name: tar
-          path: dist/setuptools_dso-*.tar.*
+          name: artifacts
+          path: dist/setuptools_dso-*
       - name: Upload
         if: startsWith(github.ref, 'refs/tags/')
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
-          twine upload dist/*
+          twine upload dist/setuptools_dso-*
