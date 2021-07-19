@@ -247,6 +247,11 @@ class build_dso(dso2libmixin, Command):
             log.debug("No DSOs to build")
             return
 
+        elif callable(self.dsos):
+            # allow dynamic/lazy population of the DSOs list
+            # pass this Command to allow access to build_* locations and self.distribution
+            self.dsos = self.dsos(self)
+
         log.info("Building DSOs")
         from distutils.ccompiler import new_compiler
 
@@ -570,7 +575,8 @@ if _bdist_wheel:
 # 2. override 'bdist_egg' to run 'build_dso' at an appropriate point.
 
 def has_dsos(cmd):
-    return len(getattr(cmd.distribution, 'x_dsos', None) or [])>0
+    x_dsos = getattr(cmd.distribution, 'x_dsos', None)
+    return callable(x_dsos) or len(x_dsos or [])>0
 
 class bdist_egg(_bdist_egg):
     # An ugly hack on top of an ugly hack...

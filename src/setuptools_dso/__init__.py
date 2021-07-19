@@ -26,7 +26,7 @@ def setup(**kws):
     Wrapper around setuptools.setup() which injects extra Commands needed to build DSOs.
     Unknown keywords are passed through.
 
-    :param x_dsos: A list of :py:class:`DSO` instances.
+    :param x_dsos: None, a list of :py:class:`DSO` instances, or a callable returning a list.
     """
     cmdclass = kws.setdefault('cmdclass', {})
     # cmdclass_setdefault sets default to cmdclass[name]=klass and verifies
@@ -47,7 +47,9 @@ def setup(**kws):
         pass # wheel not installed
     else:
         cmdclass_setdefault('bdist_wheel', bdist_wheel)
-    kws.setdefault('zip_safe', len(kws.get('ext_modules', []))==0 and len(kws.get('x_dsos', []))==0)
+    x_dsos = kws.get('x_dsos')
+    has_dsos = callable(x_dsos) or len(x_dsos or [])>0
+    kws.setdefault('zip_safe', len(kws.get('ext_modules', []))==0 and not has_dsos)
     _setup(**kws)
 
 try:

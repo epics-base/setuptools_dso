@@ -83,6 +83,11 @@ However, if this file is present, then the generated `dsodemo/lib/demo_dsoinfo.p
         zip_safe = False, # setuptools_dso is not compatible with eggs!
     )
 
+The ``setup(x_dsos=...`` argument may be either ``None`` (default),
+a list of :py:class:`DSO` instances, or a callable returning such a list.
+A callable will be invoked during the `build_dso` phase with one argument of :py:class:`distutils.core.Command`.
+(see :ref:`probing`)
+
 The :py:class:`DSO` constructor understands the same keyword arguments as `setuptools.Extension`
 and `distutils.core.Extension <https://docs.python.org/3/distutils/apiref.html#distutils.core.Extension>`_,
 with the addition of ``dsos=[...]``, ``soversion='...'``, and ``lang_compile_args={'...':'...'}``.

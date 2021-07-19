@@ -8,6 +8,7 @@ Release Notes
 
 * Introduce usage of **$SETUPTOOLS_DSO_PLAT_NAME** to override platform name during wheel builds
 * Add :py:class:`setuptools_dso.ProbeToolchain` for toolchain introspection.
+* Allow setup() argument x_dsos= to be a one argument callable returning a list of DSO instances.
 * Correctly note that wheels with DSOs are not pure.
 
 2.0 (June 2021)
