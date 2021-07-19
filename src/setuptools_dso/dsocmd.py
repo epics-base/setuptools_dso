@@ -543,7 +543,9 @@ if _bdist_wheel:
 
             # So far PIP doesn't clear the environment for sandbox builds...
             # allow mangling of platform name.  eg. 'linux_x86_64' -> 'manylinux1_x86_64'
-            plat_name = os.environ.get('SETUPTOOLS_DSO_PLAT_NAME', plat_name)
+            new_plat_name = os.environ.get('SETUPTOOLS_DSO_PLAT_NAME', '')
+            if new_plat_name:
+                plat_name = new_plat_name
 
             return (impl, abi_tag, plat_name)
 

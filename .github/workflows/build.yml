@@ -77,6 +77,7 @@ jobs:
         piparch: ["i686", "x86_64"]
         pyver: ["cp27-cp27m", "cp27-cp27mu", "cp36-cp36m", "cp37-cp37m", "cp38-cp38", "cp39-cp39"]
         exclude:
+          # manylinux2010 and above don't provide 2.7 in images
           - manylinux: "manylinux2010"
             piparch: "i686"
             pyver: "cp27-cp27m"
