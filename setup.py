@@ -2,19 +2,15 @@
 
 from setuptools import setup, Extension
 
+with open('README.md', 'r') as F:
+    long_description = F.read()
+
 setup(
     name='setuptools_dso',
-    version="2.1",
+    version="2.2a1",
     description="setuptools extension to build non-python shared libraries",
-    long_description="""setuptools extension for building non-python shared libraries
-and packaging them for distribution.  eg. for use by python extensions.
-
-This extension provides at alternative to bundling externally built
-libraries in Python Wheel packages.  This is to replace the external
-build system (eg. Makefile).
-
-If you have to ask "why", then keep moving along.  There is nothing for you to see here.
-""",
+    long_description=long_description,
+    long_description_content_type='text/x-rst',
     url='https://github.com/mdavidsaver/setuptools_dso',
     project_urls={
         'Documentation':'https://mdavidsaver.github.io/setuptools_dso',
