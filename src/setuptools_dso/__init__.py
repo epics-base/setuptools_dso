@@ -26,7 +26,7 @@ def setup(**kws):
     Wrapper around setuptools.setup() which injects extra Commands needed to build DSOs.
     Unknown keywords are passed through.
 
-    :param x_dsos: None, a list of :py:class:`DSO` instances, or a callable returning a list.
+    :param x_dsos: None, a list of :py:class:`DSO` instances, or a callable with one argument returning such a list.
     """
     cmdclass = kws.setdefault('cmdclass', {})
     # cmdclass_setdefault sets default to cmdclass[name]=klass and verifies
