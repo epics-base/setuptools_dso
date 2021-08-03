@@ -7,6 +7,7 @@ from .dsocmd import DSO, Extension, build_dso, build_ext, bdist_egg
 from .runtime import dylink_prepare_dso, find_dso
 from .probe import ProbeToolchain
 
+from distutils import log
 from setuptools.command.install import install
 
 __all__ = (
@@ -34,10 +35,14 @@ def setup(**kws):
     # example, that build_ext overridden by user is not some arbitrary class,
     # but inherits from setuptools_dso.build_ext, which is required for
     # setuptools_dso to work correctly.
-    def cmdclass_setdefault(name, klass):
+    def cmdclass_setdefault(name, klass, error=True):
         cmdclass.setdefault(name, klass)
         if not issubclass(cmdclass[name], klass):
-            raise AssertionError("cmdclass[%s] must be subclass of %s" % (cmdclass[name], klass))
+            if error:
+                raise AssertionError("cmdclass[%s] must be subclass of %s" % (cmdclass[name], klass))
+            else:
+                log.warn("cmdclass[%s] must be subclass of %s, setuptools-dso functionality may be lost",
+                         cmdclass[name], klas)
     cmdclass_setdefault('bdist_egg', bdist_egg)
     cmdclass_setdefault('build_dso', build_dso)
     cmdclass_setdefault('build_ext', build_ext)
@@ -46,7 +51,7 @@ def setup(**kws):
     except ImportError:
         pass # wheel not installed
     else:
-        cmdclass_setdefault('bdist_wheel', bdist_wheel)
+        cmdclass_setdefault('bdist_wheel', bdist_wheel, error=False)
     x_dsos = kws.get('x_dsos')
     has_dsos = callable(x_dsos) or len(x_dsos or [])>0
     kws.setdefault('zip_safe', len(kws.get('ext_modules', []))==0 and not has_dsos)
