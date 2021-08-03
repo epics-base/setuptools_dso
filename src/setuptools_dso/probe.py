@@ -113,7 +113,9 @@ class ProbeToolchain(object):
         """
         src = ['#include <%s>'%h for h in self.headers+list(headers)]
 
-        return self.try_compile('\n'.join(src), **kws)
+        ret = self.try_compile('\n'.join(src), **kws)
+        log.info('Probe includes %s -> %s', headers, 'Present' if ret else 'Absent')
+        return ret
 
     def check_include(self, header, **kws):
         """Return true if the header may be included
@@ -165,6 +167,7 @@ class ProbeToolchain(object):
             raise RuntimeError('Unable to find PROBEINFO for %s'%typename)
 
         size = int(M.group(1))
+        log.info('Probe sizeof(%s) = %d', typename, size)
 
         return size
 
@@ -190,7 +193,9 @@ class ProbeToolchain(object):
             ''
         ]
 
-        return self.try_compile('\n'.join(src), **kws)
+        ret = self.try_compile('\n'.join(src), **kws)
+        log.info('Probe Symbol %s -> %s', symname, 'Present' if ret else 'Absent')
+        return ret
 
     def check_member(self, struct, member, headers=(), **kws):
         """Return True if the given structure has the named member
@@ -211,4 +216,6 @@ class ProbeToolchain(object):
             ''
         ]
 
-        return self.try_compile('\n'.join(src), **kws)
+        ret = self.try_compile('\n'.join(src), **kws)
+        log.info('Probe Member %s::%s -> %s', struct, member, 'Present' if ret else 'Absent')
+        return ret
