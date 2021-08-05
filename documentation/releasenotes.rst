@@ -3,8 +3,14 @@
 Release Notes
 =============
 
-2.2 (UNRELEASED)
+2.3 (UNRELEASED)
 ----------------
+
+2.2 (Aug 2021)
+--------------
+
+* Add informational prints to :py:class:`setuptools_dso.ProbeToolchain` methods.
+* :py:func:`setuptools_dso.setup` demote error to warning if 'bdist_wheel' already overridden.
 
 2.1 (July 2021)
 ---------------
