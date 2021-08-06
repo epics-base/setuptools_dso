@@ -52,6 +52,15 @@ class ProbeToolchain(object):
         customize_compiler(self.compiler)
         # TODO: quiet compile errors?
 
+        # clang '-flto' produces LLVM bytecode instead of ELF object files.
+        # LLVM has a funny encoding for string constants which is hard to
+        # parse for sizeof() detecton.  So we omit '-flto' for test compiles
+        for name in ('compiler', 'compiler_so', 'compiler_cxx') + ('compile_options', 'compile_options_debug'):
+            ccmd = getattr(self.compiler, name, None)
+            if ccmd is not None:
+                ccmd = [arg for arg in ccmd if arg!='-flto']
+                setattr(self.compiler, name, ccmd)
+
         self._tdir = TemporaryDirectory()
         self.tempdir = self._tdir.name
 
