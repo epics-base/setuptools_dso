@@ -3,8 +3,14 @@
 Release Notes
 =============
 
-2.3 (UNRELEASED)
+2.4 (UNRELEASED)
 ----------------
+
+2.3 (Aug 2021)
+--------------
+
+* Strip out "-flto" when doing probe compiles with GCC and Clang.
+  Fixes :py:meth:`setuptools_dso.ProbeToolchain.sizeof` size extraction.
 
 2.2 (Aug 2021)
 --------------

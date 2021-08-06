@@ -7,7 +7,7 @@ with open('README.md', 'r') as F:
 
 setup(
     name='setuptools_dso',
-    version="2.2",
+    version="2.3",
     description="setuptools extension to build non-python shared libraries",
     long_description=long_description,
     long_description_content_type='text/x-rst',
