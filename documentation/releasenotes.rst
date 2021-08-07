@@ -3,10 +3,14 @@
 Release Notes
 =============
 
-2.4 (UNRELEASED)
+2.5 (UNRELEASED)
 ----------------
 
+2.4 (Oct 2021)
+--------------
+
 * More logging from DSO search process.
+* Add setuptools as runtime dependency. (Edmund Blomley)
 
 2.3 (Aug 2021)
 --------------

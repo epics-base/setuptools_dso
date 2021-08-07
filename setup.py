@@ -1,19 +1,20 @@
 #!/usr/bin/env python
 
-from setuptools import setup, Extension
+from setuptools import setup
 
 with open('README.md', 'r') as F:
     long_description = F.read()
 
 setup(
     name='setuptools_dso',
-    version="2.3",
+    version="2.4",
     description="setuptools extension to build non-python shared libraries",
     long_description=long_description,
     long_description_content_type='text/x-rst',
     url='https://github.com/mdavidsaver/setuptools_dso',
     project_urls={
         'Documentation':'https://mdavidsaver.github.io/setuptools_dso',
+        'Release Notes':'https://mdavidsaver.github.io/setuptools_dso/releasenotes.html',
     },
 
     author='Michael Davidsaver',

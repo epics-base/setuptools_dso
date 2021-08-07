@@ -1,6 +1,18 @@
 
 .. currentmodule:: setuptools_dso
 
+Troubleshooting
+---------------
+
+Extra prints during the build process may be enabled by passing ``-v``
+to ``setup.py`` before the command.  eg. ::
+
+    python setup.py -v bdist_wheel
+
+or ::
+
+    pip install --global-option -v .
+
 Mechanics
 ---------
 
