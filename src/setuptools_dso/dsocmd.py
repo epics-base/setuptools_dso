@@ -154,8 +154,8 @@ class dso2libmixin:
                 dsobase = os.path.dirname(import_module(parts[0]).__file__)
                 dsodir = os.path.join(dsobase, *parts[1:-1])
                 dsosearch.append(dsodir)
-            except ImportError:
-                pass
+            except ImportError as e:
+                log.debug("Can't find %s: %s"%(parts, e))
 
             for candidate in dsosearch:
                 C = os.path.join(candidate, libname)
@@ -166,7 +166,7 @@ class dso2libmixin:
                     sodirs.append(candidate)
                     break
             else:
-                raise RuntimeError("Unable to find DSO %s needed by extension %s"%(dso, ext.name))
+                raise RuntimeError("Unable to find DSO %s needed by extension %s in %s"%(dso, ext.name, dsosearch))
 
             solibs.append(parts[-1])
 

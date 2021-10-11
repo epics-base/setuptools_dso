@@ -6,6 +6,8 @@ Release Notes
 2.4 (UNRELEASED)
 ----------------
 
+* More logging from DSO search process.
+
 2.3 (Aug 2021)
 --------------
 
