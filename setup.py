@@ -30,6 +30,7 @@ setup(
         'License :: OSI Approved :: BSD License',
     ],
     python_requires='>=2.7',
+    install_requires = ['setuptools'],
 
     packages=['setuptools_dso'],
     package_dir={'':'src'},
