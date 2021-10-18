@@ -1,7 +1,5 @@
 import sys
 import os
-import platform
-import glob
 
 from collections import defaultdict
 from importlib import import_module # say that three times fast...
@@ -228,7 +226,6 @@ class build_dso(dso2libmixin, Command):
         self.force = None
 
     def finalize_options(self):
-        from distutils import sysconfig
 
         self.set_undefined_options('build_ext',
                                    ('build_lib', 'build_lib'),

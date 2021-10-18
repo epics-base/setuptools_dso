@@ -108,7 +108,7 @@ class ProbeToolchain(object):
         try:
             self.compile(src, **kws)
             return True
-        except (DistutilsExecError, CompileError) as e:
+        except (DistutilsExecError, CompileError):
             return False
 
     def check_includes(self, headers, **kws):
