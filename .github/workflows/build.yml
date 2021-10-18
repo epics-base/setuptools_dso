@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9, 3.x]
+        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9, "3.10", "3.x"]
         exclude:
           # missing required (old) Microsoft Visual C++ 9.0
           - os: windows-latest
@@ -75,8 +75,17 @@ jobs:
       matrix:
         manylinux: ["manylinux1", "manylinux2010", "manylinux2014"]
         piparch: ["i686", "x86_64"]
-        pyver: ["cp27-cp27m", "cp27-cp27mu", "cp36-cp36m", "cp37-cp37m", "cp38-cp38", "cp39-cp39"]
+        pyver: ["cp27-cp27m", "cp27-cp27mu", "cp36-cp36m", "cp37-cp37m", "cp38-cp38", "cp39-cp39", "cp310-cp310"]
         exclude:
+          # manylinux1 doesn't include py >= 3.10
+          - manylinux: "manylinux1"
+            piparch: "i686"
+            pyver: "cp310-cp310"
+
+          - manylinux: "manylinux1"
+            piparch: "x86_64"
+            pyver: "cp310-cp310"
+
           # manylinux2010 and above don't provide 2.7 in images
           - manylinux: "manylinux2010"
             piparch: "i686"
@@ -117,6 +126,7 @@ jobs:
           cat <<EOF > runit.sh
           #!/bin/sh
           set -e -x
+          ls /opt/python/*/bin/python
           cd /io
           export PATH="/opt/python/${{ matrix.pyver }}/bin:\$PATH"
           which python
