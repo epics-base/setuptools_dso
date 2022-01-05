@@ -10,7 +10,7 @@ setup(
     version="2.4",
     description="setuptools extension to build non-python shared libraries",
     long_description=long_description,
-    long_description_content_type='text/x-rst',
+    long_description_content_type='text/markdown',
     url='https://github.com/mdavidsaver/setuptools_dso',
     project_urls={
         'Documentation':'https://mdavidsaver.github.io/setuptools_dso',
