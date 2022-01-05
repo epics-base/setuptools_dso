@@ -51,6 +51,7 @@ jobs:
         shell: bash
         run: |
           set -x
+          python -m setuptools_dso.probe
           python -m nose2 setuptools_dso
       - name: Test Example wheel
         shell: bash
@@ -149,8 +150,11 @@ jobs:
 
           export SETUPTOOLS_DSO_PLAT_NAME="${{ matrix.manylinux }}_${{ matrix.piparch }}"
 
+          python -m pip install -v --no-index -f dist setuptools_dso
+          python -m setuptools_dso.probe
+          python -m nose2 setuptools_dso
+
           cd example
-          python -m pip install -v --no-index -f ../dist setuptools_dso
           python setup.py sdist -d ../dist --formats=gztar
           cd ..
 

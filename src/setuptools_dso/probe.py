@@ -1,4 +1,9 @@
 
+
+from __future__ import print_function
+
+from collections import OrderedDict
+from itertools import chain
 import re
 import os
 import shutil
@@ -21,10 +26,10 @@ except ImportError:
                 shutil.rmtree(self.name, ignore_errors=True)
                 self.name = None
 
-from distutils.ccompiler import new_compiler
-from distutils.sysconfig import customize_compiler
 from distutils.errors import DistutilsExecError, CompileError
 from distutils import log
+
+from .compiler import new_compiler
 
 __all__ = (
     'ProbeToolchain',
@@ -44,12 +49,12 @@ class ProbeToolchain(object):
         self.verbose = verbose
         self.headers = list(headers)
         self.define_macros = list(define_macros)
+        self._info = None
 
         self.compiler = new_compiler(compiler=compiler,
                                      verbose=self.verbose,
                                      dry_run=False,
                                      force=True)
-        customize_compiler(self.compiler)
         # TODO: quiet compile errors?
 
         # clang '-flto' produces LLVM bytecode instead of ELF object files.
@@ -64,6 +69,13 @@ class ProbeToolchain(object):
         self._tdir = TemporaryDirectory()
         self.tempdir = self._tdir.name
 
+    def _source_name(self, basename, language='c', **kws):
+        for ext, lang in self.compiler.language_map.items():
+            if lang==language:
+                return basename + ext
+        else:
+            raise ValueError('unknown language '+language)
+
     def compile(self, src, language='c', define_macros=[], **kws):
         """Compile provided source code and return path to resulting object file
 
@@ -75,13 +87,7 @@ class ProbeToolchain(object):
         :param list extra_compile_args: Extra arguments to pass to the compiler
         """
         define_macros = self.define_macros + list(define_macros)
-
-        for ext, lang in self.compiler.language_map.items():
-            if lang==language:
-                srcname = os.path.join(self.tempdir, 'try_compile' + ext)
-                break
-        else:
-            raise ValueError('unknown language '+language)
+        srcname = os.path.join(self.tempdir, self._source_name('try_compile', language=language))
 
         log.debug('/* test compile */\n'+src)
         with open(srcname, 'w') as F:
@@ -228,3 +234,223 @@ class ProbeToolchain(object):
         ret = self.try_compile('\n'.join(src), **kws)
         log.info('Probe Member %s::%s -> %s', struct, member, 'Present' if ret else 'Absent')
         return ret
+
+    def eval_macros(self, macros, headers=(), define_macros=[], **kws):
+        """Expand C/C++ preprocessor macros.
+
+        For undefined macros, None is returned.
+        For defined macros a string is returned.
+        When evaluating multiple macros, the order of the macros argument is preserved
+        in the OrderedDict which is returned.
+
+        :returns: An OrderedDict mapping to string (if defined) or None (if not defined)
+        :param str|list macros: A macro name string, or a list of such strings
+        :param list headers: List of headers to include during all test compilations
+        :param list define_macros: Extra macro definitions.
+        :param list include_dirs: Extra directories to search for headers
+        :param list extra_preargs: Extra arguments to pass to the compiler
+        :param list extra_postargs: Extra arguments to pass to the compiler
+        """
+        if isinstance(macros, str):
+            macros = [macros]
+
+        srcname = os.path.join(self.tempdir, self._source_name('eval_macros_in', **kws))
+        outname = os.path.join(self.tempdir, self._source_name('eval_macros_out', **kws))
+
+        define_macros = self.define_macros + list(define_macros)
+        src = ['#include <%s>'%h for h in self.headers+list(headers)]
+
+        for macro in macros:
+            src.append('''
+#if defined({macro})
+void D_{macro} = |||{macro}|||;
+#else
+void U_{macro} = ||||||;
+#endif /* {macro} */
+'''.format(macro=macro))
+
+        src = '\n'.join(src)
+
+        with open(srcname, 'w') as F:
+            F.write(src)
+
+        self.compiler.preprocess(srcname, outname, macros=define_macros, **kws)
+
+        with open(outname, 'r') as F:
+            out = F.read()
+
+        defs = {}
+
+        for M in re.finditer(r'void ([DU])_([a-zA-Z_][a-zA-Z0-9_]*) = \|\|\|(.*?)\|\|\|;', out, re.MULTILINE):
+            du, name, val = M.groups()
+            if du=='D':
+                defs[name] = val
+            elif du=='U':
+                defs[name] = None
+            else:
+                raise ValueError("Logic error {0!r} : {1!r}".format(M, M.groups()) )
+
+        return OrderedDict([(name, defs[name]) for name in macros]) # will error in some def was extracted
+
+    @property
+    def info(self):
+        """Inspect toolchain
+
+        :returns: A :py:class:`probe.ToolchainInfo`
+        """
+        if self._info is None:
+            self._info = ToolchainInfo(self)
+
+        return self._info
+
+class ToolchainInfo(object):
+    """Information about a compiler toolchain
+    """
+
+    compiler_type = None
+    """Directly copied from :py:class:`distutils.ccompiler.CCompiler.compiler_type`
+
+    Known values include: 'bcpp', 'cygwin', 'mingw', 'msvc', 'unix'
+    """
+
+    compiler = None
+    """Compiler implementation name
+
+    Possible values; 'clang', 'gcc', 'msvc'
+    """
+
+    compiler_version = None
+    """Compiler release version as a tuple of integers suitible for comparison
+
+    eg. for GCC: (4,9,2), clang: (11,0,1), msvc: (19,0,24245)
+    """
+
+    gnuish = False
+    """True when compiler is clang or gcc
+    """
+
+    target_os = None
+    """Target OS runtime environment
+
+    Known values: "cygwin", "linux", "osx", "windows"
+    """
+
+    target_arch = None
+    """Target CPU architecture
+
+    Known values: "aarch64", "arm32", "amd64", "i386"
+    """
+
+    address_width = 0
+    """Width in bits of a virtual address.  aka. 8*sizeof(void*)
+
+    Known values: 32, 64
+    """
+
+    endian = None
+    """Target byte order for multi-byte values
+
+    Known values: "little", "big"
+    """
+
+    # cf.
+    #  https://sourceforge.net/p/predef/wiki/Home/
+    #  https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
+
+    __macros = [
+        # compiler ID
+        '__clang__',
+        '__clang_major__',
+        '__clang_minor__',
+        '__clang_patchlevel__',
+        '__GNUC__',
+        '__GNUC_MINOR__',
+        '__GNUC_PATCHLEVEL__',
+        '_MSC_VER',
+        '_MSC_FULL_VER',
+    ]
+
+    __info = {
+        'target_os':[
+            ('__APPLE__', 'osx'),
+            ('__CYGWIN__', 'cygwin'),
+            ('__linux__', 'linux'),
+            ('_WIN32', 'windows'),
+        ],
+        'target_arch':[
+            # GCC/clang
+            ('__aarch64__', 'aarch64'),
+            ('__arm__', 'arm32'),
+            ('__x86_64__', 'amd64'),
+            ('__i386__', 'i386'),
+            # MSVC
+            ('_M_ARM', 'arm32'),
+            ('_M_ARM64','arm64'),
+            ('_M_AMD64','amd64'),
+            ('_M_X64','amd64'),
+            ('_M_IX86','i386'),
+        ],
+        'endian':[
+            ('_WIN32','little'),
+            ('__x86_64__', 'little'),
+            ('__i386__', 'little'),
+            ('__ARMEB__', 'big'),
+            ('__ARMEL__', 'little'),
+        ],
+    }
+
+    def __init__(self, TC):
+        self.compiler_type = TC.compiler.compiler_type
+
+        macros = self.__macros + [macro for macro,_value in chain(*[x for x in self.__info.values()])]
+
+        self._raw_macros = D = TC.eval_macros(macros)
+
+        # special handler for compiler version
+        if D['__clang__'] is not None:
+            self.compiler = 'clang'
+            self.compiler_version = tuple(int(D[comp]) for comp in ('__clang_major__',
+                '__clang_minor__',
+                '__clang_patchlevel__'))
+            self.gnuish = True
+
+        elif D['__GNUC__'] is not None:
+            self.compiler = 'gcc'
+            self.compiler_version = tuple(int(D[comp]) for comp in ('__GNUC__',
+                '__GNUC_MINOR__',
+                '__GNUC_PATCHLEVEL__'))
+            self.gnuish = True
+
+        elif D['_MSC_VER'] is not None:
+            self.compiler = 'msvc'
+            # eg. "190024245" -> (19, 00, 24245)
+            FV = D['_MSC_FULL_VER']
+            self.compiler_version = tuple(int(p) for p in (FV[:2], FV[2:4], FV[4:]))
+
+        else:
+            log.warn("Warning: unable to classify compiler")
+
+        for attr, info in self.__info.items():
+            for macro, val in info:
+                if D.get(macro) is not None:
+                    setattr(self, attr, val)
+
+            if getattr(self, attr) is None:
+                log.warn("Warning: unable to classify "+attr)
+
+        self.address_width = 8*TC.sizeof('void*')
+
+    def __repr__(self):
+        S = []
+        for name in dir(self):
+            if name.startswith('_'):
+                continue
+            V = getattr(self, name)
+            if callable(V):
+                continue
+            S.append('{0}={1!r}'.format(name, V))
+        return 'ToolchainInfo({})'.format(', '.join(S))
+    __str__ = __repr__
+
+if __name__=='__main__':
+    print(ProbeToolchain().info)

@@ -30,5 +30,22 @@ The `ProbeToolchain` class exists to allow these questions to be answered. ::
         zip_safe = False,
     )
 
+.. _probe_classify:
+
+Toolchain Classification
+------------------------
+
+:py:attr:`ProbeToolchain.info` is a :py:class:`probe.ToolchainInfo` object based
+on compiler specific predefined preprocessor macros. ::
+
+    from setuptools_dso import ProbeToolchain
+
+    probe = ProbeToolchain()
+    if probe.info.compiler=='gcc' and probe.info.compiler_version<(4,9,4):
+        print("GCC version is too old")
+
 .. autoclass:: ProbeToolchain
+    :members:
+
+.. autoclass:: setuptools_dso.probe.ToolchainInfo
     :members:
