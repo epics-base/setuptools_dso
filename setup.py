@@ -33,6 +33,6 @@ setup(
     python_requires='>=2.7',
     install_requires = ['setuptools'],
 
-    packages=['setuptools_dso'],
+    packages=['setuptools_dso', 'setuptools_dso.test'],
     package_dir={'':'src'},
 )

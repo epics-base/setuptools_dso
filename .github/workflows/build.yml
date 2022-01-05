@@ -25,23 +25,33 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Builder Info
+      - name: Prepare
         run: |
           set -x
           which python
           python --version
+          python -m pip install -U pip
           python -m pip --version
-      - name: Test
+      - name: Deps
         shell: bash
         run: |
           set -x
-          # capture other deps
           pip download -d dist setuptools wheel nose2
           python -m pip install -v --no-index -f dist setuptools wheel nose2
+          python -m nose2 -h
+      - name: Build/Install
+        shell: bash
+        run: |
+          set -x
           python setup.py sdist --formats=gztar
           ls dist
           # build from source tar to ensure completeness
           python -m pip install -v --no-index -f dist setuptools_dso
+      - name: Test
+        shell: bash
+        run: |
+          set -x
+          python -m nose2 setuptools_dso
       - name: Test Example wheel
         shell: bash
         run: |
