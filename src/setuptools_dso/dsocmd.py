@@ -16,10 +16,10 @@ from setuptools.command.build_ext import build_ext as _build_ext
 from setuptools.command.install import install
 from setuptools.command.bdist_egg import bdist_egg as _bdist_egg
 
-from distutils.sysconfig import customize_compiler
 from distutils.dep_util import newer_group
-from distutils.util import get_platform
 from distutils import log
+
+from .compiler import new_compiler
 
 __all__ = (
     'DSO',
@@ -250,13 +250,11 @@ class build_dso(dso2libmixin, Command):
             self.dsos = self.dsos(self)
 
         log.info("Building DSOs")
-        from distutils.ccompiler import new_compiler
 
         self.compiler = new_compiler(#compiler=self.compiler,
                                      verbose=self.verbose,
                                      dry_run=self.dry_run,
                                      force=self.force)
-        customize_compiler(self.compiler)
 
         # fixup for MAC to build dylib (MH_DYLIB) instead of bundle (MH_BUNDLE)
         if sys.platform == 'darwin':
