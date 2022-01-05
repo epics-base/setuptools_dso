@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+# Copyright 2022  Michael Davidsaver
+# SPDX-License-Identifier: BSD
+# See LICENSE
 
 from setuptools import setup
 

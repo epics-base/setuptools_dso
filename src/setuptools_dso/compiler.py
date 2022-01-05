@@ -1,4 +1,6 @@
-
+# Copyright 2022  Michael Davidsaver
+# SPDX-License-Identifier: BSD
+# See LICENSE
 import os
 from functools import partial
 

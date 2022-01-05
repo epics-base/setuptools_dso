@@ -1,7 +1,9 @@
-"""
-Tools for interacting with packages containing DSOs w/ dsoinfo modules
-as built with setuptools_dso >= 2 
-"""
+# Copyright 2022  Michael Davidsaver
+# SPDX-License-Identifier: BSD
+# See LICENSE
+
+# Tools for interacting with packages containing DSOs w/ dsoinfo modules
+# as built with setuptools_dso >= 2 
 
 from __future__ import print_function
 

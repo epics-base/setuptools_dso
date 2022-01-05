@@ -1,4 +1,6 @@
-
+# Copyright 2022  Michael Davidsaver
+# SPDX-License-Identifier: BSD
+# See LICENSE
 from __future__ import print_function
 
 import os

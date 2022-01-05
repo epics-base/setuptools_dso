@@ -1,3 +1,6 @@
+# Copyright 2022  Michael Davidsaver
+# SPDX-License-Identifier: BSD
+# See LICENSE
 import sys
 import os
 
