@@ -86,7 +86,8 @@ class ProbeToolchain(object):
         :param str language: Source code language: 'c' or 'c++'
         :param list define_macros: Extra macro definitions.
         :param list include_dirs: Extra directories to search for headers
-        :param list extra_compile_args: Extra arguments to pass to the compiler
+        :param list extra_preargs: Extra arguments to pass to the compiler
+        :param list extra_postargs: Extra arguments to pass to the compiler
         """
         define_macros = self.define_macros + list(define_macros)
         srcname = os.path.join(self.tempdir, self._source_name('try_compile', language=language))
@@ -111,7 +112,8 @@ class ProbeToolchain(object):
         :param str language: Source code language: 'c' or 'c++'
         :param list define_macros: Extra macro definitions.
         :param list include_dirs: Extra directories to search for headers
-        :param list extra_compile_args: Extra arguments to pass to the compiler
+        :param list extra_preargs: Extra arguments to pass to the compiler
+        :param list extra_postargs: Extra arguments to pass to the compiler
         """
         try:
             self.compile(src, **kws)
@@ -126,7 +128,8 @@ class ProbeToolchain(object):
         :param str language: Source code language: 'c' or 'c++'
         :param list define_macros: Extra macro definitions.
         :param list include_dirs: Extra directories to search for headers
-        :param list extra_compile_args: Extra arguments to pass to the compiler
+        :param list extra_preargs: Extra arguments to pass to the compiler
+        :param list extra_postargs: Extra arguments to pass to the compiler
         """
         src = ['#include <%s>'%h for h in self.headers+list(headers)]
 
@@ -141,7 +144,8 @@ class ProbeToolchain(object):
         :param str language: Source code language: 'c' or 'c++'
         :param list define_macros: Extra macro definitions.
         :param list include_dirs: Extra directories to search for headers
-        :param list extra_compile_args: Extra arguments to pass to the compiler
+        :param list extra_preargs: Extra arguments to pass to the compiler
+        :param list extra_postargs: Extra arguments to pass to the compiler
         """
         return self.check_includes([header], **kws)
 
@@ -153,7 +157,8 @@ class ProbeToolchain(object):
         :param str language: Source code language: 'c' or 'c++'
         :param list define_macros: Extra macro definitions.
         :param list include_dirs: Extra directories to search for headers
-        :param list extra_compile_args: Extra arguments to pass to the compiler
+        :param list extra_preargs: Extra arguments to pass to the compiler
+        :param list extra_postargs: Extra arguments to pass to the compiler
         """
         # borrow a trick from CMake.  see Modules/CheckTypeSize.c.in
         src = ['#include <%s>'%h for h in self.headers+list(headers)]
@@ -196,7 +201,8 @@ class ProbeToolchain(object):
         :param str language: Source code language: 'c' or 'c++'
         :param list define_macros: Extra macro definitions.
         :param list include_dirs: Extra directories to search for headers
-        :param list extra_compile_args: Extra arguments to pass to the compiler
+        :param list extra_preargs: Extra arguments to pass to the compiler
+        :param list extra_postargs: Extra arguments to pass to the compiler
         """
         src = ['#include <%s>'%h for h in self.headers+list(headers)]
         src += [
@@ -223,7 +229,8 @@ class ProbeToolchain(object):
         :param str language: Source code language: 'c' or 'c++'
         :param list define_macros: Extra macro definitions.
         :param list include_dirs: Extra directories to search for headers
-        :param list extra_compile_args: Extra arguments to pass to the compiler
+        :param list extra_preargs: Extra arguments to pass to the compiler
+        :param list extra_postargs: Extra arguments to pass to the compiler
         """
         src = ['#include <%s>'%h for h in self.headers+list(headers)]
         src += [
