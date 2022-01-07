@@ -5,10 +5,14 @@ Release Notes
 
 .. currentmodule:: setuptools_dso
 
-2.5 (UNRELEASED)
+2.6 (UNRELEASED)
 ----------------
 
+2.5 (Jan 2022)
+--------------
+
 * Add :py:attr:`ProbeToolchain.info` and :py:class:`probe.ToolchainInfo` for :ref:`probe_classify`.
+* Add :py:meth:`ProbeToolchain.eval_macros`
 
 2.4 (Oct 2021)
 --------------
