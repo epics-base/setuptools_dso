@@ -6,6 +6,7 @@ from __future__ import print_function
 import os
 from setuptools import setup as _setup
 from .dsocmd import DSO, Extension, build_dso, build_ext, bdist_egg
+from .develop import develop
 from .runtime import dylink_prepare_dso, find_dso
 from .probe import ProbeToolchain
 
@@ -48,6 +49,7 @@ def setup(**kws):
     cmdclass_setdefault('bdist_egg', bdist_egg)
     cmdclass_setdefault('build_dso', build_dso)
     cmdclass_setdefault('build_ext', build_ext)
+    cmdclass_setdefault('develop', develop, error=False)
     try:
         from .dsocmd import bdist_wheel
     except ImportError:
