@@ -8,10 +8,23 @@ from distutils.ccompiler import (new_compiler as _new_compiler, gen_preprocess_o
 from distutils.dep_util import newer
 from distutils.errors import DistutilsExecError, CompileError
 from distutils.sysconfig import customize_compiler
+from distutils import log
 
 __all__ = (
     'new_compiler',
 )
+
+
+# workaround for https://github.com/pypa/setuptools/issues/3591
+# cf. https://github.com/mdavidsaver/setuptools_dso/issues/23
+#
+# setuptools >=63.4.3
+# each call to CCompiler.compile(..., include_dirs=None) appends to the
+# self.include_dirs list, growing without bound.
+# With MSVC this eventually fails.
+def _patch_fix_compile_args(realfn, output_dir, macros, include_dirs, *args, **kws):
+    log.warn('_patch_fix_compile_args include_dirs=%r', include_dirs)
+    return realfn(output_dir, macros, include_dirs or [], *args, **kws)
 
 def _default_preprocess(self, *args, **kws):
     """preprocess() is documented to raise PreprocessError but the
@@ -54,6 +67,10 @@ def new_compiler(**kws):
     """
     compiler = _new_compiler(**kws)
     customize_compiler(compiler)
+
+    if hasattr(compiler.__class__, 'include_dirs'):
+        log.warn('Patch _fix_compile_args() to avoid modification to compiler.include_dirs')
+        compiler._fix_compile_args = partial(_patch_fix_compile_args, compiler._fix_compile_args)
 
     if compiler.compiler_type=='msvc': # either msvccompiler or msvc9compiler
         if not compiler.initialized: # extra super lazy initialization...
