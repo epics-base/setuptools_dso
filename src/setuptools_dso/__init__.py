@@ -4,6 +4,7 @@
 from __future__ import print_function
 
 import os
+# import of setuptools implicitly monkey patches distutils...
 from setuptools import setup as _setup
 from .dsocmd import DSO, Extension, build_dso, build_ext, bdist_egg
 from .runtime import dylink_prepare_dso, find_dso
