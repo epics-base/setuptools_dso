@@ -19,6 +19,10 @@ jobs:
           # missing required (old) Microsoft Visual C++ 9.0
           - os: windows-latest
             python-version: 2.7
+
+          # missing Microsoft Visual C++ 14.0
+          - os: windows-latest
+            python-version: 3.5
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
