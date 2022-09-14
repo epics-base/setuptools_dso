@@ -47,10 +47,10 @@ class ProbeToolchain(object):
     """
     def __init__(self, verbose=False,
                  compiler=None,
-                 headers=[], define_macros=[]):
+                 headers=None, define_macros=None):
         self.verbose = verbose
-        self.headers = list(headers)
-        self.define_macros = list(define_macros)
+        self.headers = list(headers or [])
+        self.define_macros = list(define_macros or [])
         self._info = None
 
         self.compiler = new_compiler(compiler=compiler,
@@ -78,7 +78,7 @@ class ProbeToolchain(object):
         else:
             raise ValueError('unknown language '+language)
 
-    def compile(self, src, language='c', define_macros=[], **kws):
+    def compile(self, src, language='c', define_macros=None, **kws):
         """Compile provided source code and return path to resulting object file
 
         :returns: Path string to object file in temporary location.
@@ -89,7 +89,7 @@ class ProbeToolchain(object):
         :param list extra_preargs: Extra arguments to pass to the compiler
         :param list extra_postargs: Extra arguments to pass to the compiler
         """
-        define_macros = self.define_macros + list(define_macros)
+        define_macros = self.define_macros + list(define_macros or [])
         srcname = os.path.join(self.tempdir, self._source_name('try_compile', language=language))
 
         log.debug('/* test compile */\n'+src)
@@ -244,7 +244,7 @@ class ProbeToolchain(object):
         log.info('Probe Member %s::%s -> %s', struct, member, 'Present' if ret else 'Absent')
         return ret
 
-    def eval_macros(self, macros, headers=(), define_macros=[], **kws):
+    def eval_macros(self, macros, headers=(), define_macros=None, **kws):
         """Expand C/C++ preprocessor macros.
 
         For undefined macros, None is returned.
@@ -266,7 +266,7 @@ class ProbeToolchain(object):
         srcname = os.path.join(self.tempdir, self._source_name('eval_macros_in', **kws))
         outname = os.path.join(self.tempdir, self._source_name('eval_macros_out', **kws))
 
-        define_macros = self.define_macros + list(define_macros)
+        define_macros = self.define_macros + list(define_macros or [])
         src = ['#include <%s>'%h for h in self.headers+list(headers)]
 
         for macro in macros:
