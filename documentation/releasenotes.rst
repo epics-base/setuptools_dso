@@ -5,8 +5,14 @@ Release Notes
 
 .. currentmodule:: setuptools_dso
 
-2.6 (UNRELEASED)
+2.7 (UNRELEASED)
 ----------------
+
+2.6 (Sept 2022)
+---------------
+
+* Avoid mutable default arguments
+* Workaround probable `bug <https://github.com/mdavidsaver/setuptools_dso/issues/23>`_ in `setuptools >= 63.4.3 <https://github.com/pypa/setuptools/issues/3591>`_
 
 2.5 (Jan 2022)
 --------------
