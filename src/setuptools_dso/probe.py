@@ -149,7 +149,7 @@ class ProbeToolchain(object):
         """
         return self.check_includes([header], **kws)
 
-    def sizeof(self, typename, headers=(), **kws):
+    def sizeof(self, typename, headers=None, **kws):
         """Return size in bytes of provided typename
 
         :param str typename: Header file name
@@ -161,7 +161,7 @@ class ProbeToolchain(object):
         :param list extra_postargs: Extra arguments to pass to the compiler
         """
         # borrow a trick from CMake.  see Modules/CheckTypeSize.c.in
-        src = ['#include <%s>'%h for h in self.headers+list(headers)]
+        src = ['#include <%s>'%h for h in self.headers+list(headers or ())]
         src += [
             '#define PROBESIZE (sizeof(%s))'%typename,
             "char probe_info[] = {'P','R','O','B','E','I','N','F','O','[',"
@@ -193,7 +193,7 @@ class ProbeToolchain(object):
 
         return size
 
-    def check_symbol(self, symname, headers=(), **kws):
+    def check_symbol(self, symname, headers=None, **kws):
         """Return True if symbol name (macro, variable, or function) is defined/delcared
 
         :param str symname: Symbol name
@@ -204,7 +204,7 @@ class ProbeToolchain(object):
         :param list extra_preargs: Extra arguments to pass to the compiler
         :param list extra_postargs: Extra arguments to pass to the compiler
         """
-        src = ['#include <%s>'%h for h in self.headers+list(headers)]
+        src = ['#include <%s>'%h for h in self.headers+list(headers or ())]
         src += [
             'void* probe_symbol(void) {',
             '#if defined(%s)'%symname,
@@ -220,7 +220,7 @@ class ProbeToolchain(object):
         log.info('Probe Symbol %s -> %s', symname, 'Present' if ret else 'Absent')
         return ret
 
-    def check_member(self, struct, member, headers=(), **kws):
+    def check_member(self, struct, member, headers=None, **kws):
         """Return True if the given structure has the named member
 
         :param str struct: Structure name
@@ -232,7 +232,7 @@ class ProbeToolchain(object):
         :param list extra_preargs: Extra arguments to pass to the compiler
         :param list extra_postargs: Extra arguments to pass to the compiler
         """
-        src = ['#include <%s>'%h for h in self.headers+list(headers)]
+        src = ['#include <%s>'%h for h in self.headers+list(headers or ())]
         src += [
             'int probe_member(void) {',
             '  return (int)sizeof( ((%s *)0)->%s); '%(struct, member),
@@ -244,7 +244,7 @@ class ProbeToolchain(object):
         log.info('Probe Member %s::%s -> %s', struct, member, 'Present' if ret else 'Absent')
         return ret
 
-    def eval_macros(self, macros, headers=(), define_macros=None, **kws):
+    def eval_macros(self, macros, headers=None, define_macros=None, **kws):
         """Expand C/C++ preprocessor macros.
 
         For undefined macros, None is returned.
@@ -267,7 +267,7 @@ class ProbeToolchain(object):
         outname = os.path.join(self.tempdir, self._source_name('eval_macros_out', **kws))
 
         define_macros = self.define_macros + list(define_macros or [])
-        src = ['#include <%s>'%h for h in self.headers+list(headers)]
+        src = ['#include <%s>'%h for h in self.headers+list(headers or ())]
 
         for macro in macros:
             src.append('''
