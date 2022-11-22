@@ -30,9 +30,9 @@ jobs:
             python-version: 3.5
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Prepare
@@ -140,7 +140,7 @@ jobs:
             piparch: "x86_64"
             pyver: "cp27-cp27mu"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Test
         run: |
           # can't use GHA native docker support since GHA magic binaries need .so absent from old manylinux images :(
@@ -187,7 +187,7 @@ jobs:
     needs: [test, manylinux]
     name: Upload
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -210,7 +210,7 @@ jobs:
           ls dist/setuptools_dso-*
           tar -taf dist/setuptools_dso-*.tar.*
       - name: Save
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: artifacts
           path: dist/setuptools_dso-*
