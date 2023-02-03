@@ -30,6 +30,7 @@ __all__ = (
     'build_dso',
     'build_ext',
     'bdist_egg',
+    'install',
 )
 
 Distribution.x_dsos = None
