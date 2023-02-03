@@ -6,12 +6,11 @@ from __future__ import print_function
 import os
 # import of setuptools implicitly monkey patches distutils...
 from setuptools import setup as _setup
-from .dsocmd import DSO, Extension, build_dso, build_ext, bdist_egg
+from .dsocmd import DSO, Extension, install, build, build_dso, build_ext, bdist_egg
 from .runtime import dylink_prepare_dso, find_dso
 from .probe import ProbeToolchain
 
 from distutils import log
-from setuptools.command.install import install
 
 __all__ = (
     'DSO',
@@ -49,6 +48,8 @@ def setup(**kws):
     cmdclass_setdefault('bdist_egg', bdist_egg)
     cmdclass_setdefault('build_dso', build_dso)
     cmdclass_setdefault('build_ext', build_ext)
+    cmdclass_setdefault('build', build, error=False)
+    cmdclass_setdefault('install', install, error=False)
     try:
         from .dsocmd import bdist_wheel
     except ImportError:

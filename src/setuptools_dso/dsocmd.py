@@ -16,8 +16,14 @@ except ImportError:
 
 from setuptools import Command, Distribution, Extension as _Extension
 from setuptools.command.build_ext import build_ext as _build_ext
-from setuptools.command.install import install
+from setuptools.command.install import install as _install
 from setuptools.command.bdist_egg import bdist_egg as _bdist_egg
+try:
+    # attempt at future proofing
+    # doesn't exist as of setuptools 52.0.0
+    from setuptools.command.build import build as _build
+except ImportError:
+    from distutils.command.build import build as _build
 
 from distutils.dep_util import newer_group
 from distutils import log
@@ -527,6 +533,26 @@ class build_ext(dso2libmixin, _build_ext):
 
         self.dso2lib_post(self.get_ext_fullpath(ext.name))
 
+# hack...
+# setuptools/distutils decides to treat build as a "purelib" vs. "platlib"
+# by testing 'dist.ext_modules' (not call 'dist.has_ext_modules()' mind you...)
+# So we can't simply patch has_ext_modules() to also check for DSOs.
+#
+# Otherwise a package contains DSOs, but not Extensions, would incorrectly
+# be treated as "purelib".
+class build(_build):
+    def finalize_options(self):
+        _build.finalize_options(self)
+        if self.distribution.x_dsos:
+            self.build_lib = self.build_platlib
+
+class install(_install):
+    def finalize_options(self):
+        _install.finalize_options(self)
+        if self.distribution.x_dsos:
+            self.install_lib = self.install_platlib
+
+
 if _bdist_wheel:
     class bdist_wheel(_bdist_wheel):
         """Since 'auditwheel' doesn't understand the idea of non-python libraries in the python tree,
@@ -607,8 +633,7 @@ def _needs_builddso(command, right_before=None):
     _.insert(where, ('build_dso', has_dsos))
     command.sub_commands = _
 
-from distutils.command.build import build
-_needs_builddso(build, right_before='build_clib')
+_needs_builddso(_build, right_before='build_clib')
 
 
 # depend build_ext: build_dso, for DSOs to be automatically built on
