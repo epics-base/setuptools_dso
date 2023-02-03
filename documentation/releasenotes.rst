@@ -8,6 +8,9 @@ Release Notes
 2.7 (UNRELEASED)
 ----------------
 
+* Ensure package with DSO but no Extension is installed as platlib.
+* Adds `cmdclass` overrides for `build` and `install`.
+
 2.6 (Sept 2022)
 ---------------
 
