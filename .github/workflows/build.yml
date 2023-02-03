@@ -99,6 +99,19 @@ jobs:
           python setup.py -v build_ext -i
           (cd src && python -m dsodemo.cli)
           cd ..
+      - name: Test Example DSO only
+        shell: bash
+        run: |
+          set -x
+          cd example
+          python setup.py clean -a
+          git clean -fdx .
+          rm -f dist/*.whl
+          python setup-dso-only.py -v bdist_wheel
+          python -m wheel unpack -d junk dist/*.whl
+          find junk
+          ls junk/*/*.dist-info/WHEEL
+          ! ls junk/*/*/purelib
 
   manylinux:
     runs-on: ubuntu-latest
