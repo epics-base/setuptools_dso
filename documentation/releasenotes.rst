@@ -5,8 +5,8 @@ Release Notes
 
 .. currentmodule:: setuptools_dso
 
-2.7 (UNRELEASED)
-----------------
+2.7 (Feb 2023)
+--------------
 
 * Ensure package with DSO but no Extension is installed as platlib.
 * Adds `cmdclass` overrides for `build` and `install`.
