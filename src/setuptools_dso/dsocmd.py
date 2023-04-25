@@ -394,7 +394,9 @@ class build_dso(dso2libmixin, Command):
             # The .lib is considered "temporary" for extensions, but not for us
             # so we pass export_symbols=None and put it along side the .dll
             # eg. "pkg\mod\mylib.dll" and "pkg\mod\mylib.lib"
-            extra_args.append('/IMPLIB:%s.lib'%(os.path.splitext(outlib)[0]))
+            outlib_lib = '%s.lib' % os.path.splitext(outlib)[0]
+            outlib_exp = '%s.exp' % os.path.splitext(outlib)[0]
+            extra_args.append('/IMPLIB:%s'%outlib_lib)
 
         elif baselib!=solib: # ELF
             extra_args.extend(['-Wl,-h,%s'%solibbase])
@@ -428,13 +430,17 @@ class build_dso(dso2libmixin, Command):
             pkg = '.'.join(dso.name.split('.')[:-1])    # path.to.dso -> path.to
             pkgdir = build_py.get_package_dir(pkg)      # path.to -> src/path/to
 
-            solib_dst   = os.path.join(pkgdir, os.path.basename(solib))     # path/to/dso.so -> src/path/to/dso.so
-            baselib_dst = os.path.join(pkgdir, os.path.basename(baselib))
+            def inplace_dst(path): # build/.../path/to/dso.so -> src/path/to/dso.so
+                return os.path.join(pkgdir, os.path.basename(path))
 
-            self.mkpath(os.path.dirname(solib_dst))
-            self.copy_file(outlib, solib_dst)
+            self.mkpath(os.path.dirname(inplace_dst(outlib)))
+            self.copy_file(outlib, inplace_dst(outlib))
             if baselib!=solib:
-                self.copy_file(outbaselib, baselib_dst)
+                self.copy_file(outbaselib, inplace_dst(outbaselib))
+            if sys.platform == "win32":
+                # on windows linking to x.dll goes through x.lib and x.exp first
+                self.copy_file(outlib_lib, inplace_dst(outlib_lib))
+                self.copy_file(outlib_exp, inplace_dst(outlib_exp))
 
     def gen_info_module(self, dso):
         if not dso.gen_info:

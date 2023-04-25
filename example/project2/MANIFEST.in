@@ -1,0 +1,4 @@
+include pyproject.toml
+include src/*.h
+include src/*.c
+include src/*.cpp
