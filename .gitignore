@@ -4,6 +4,9 @@
 *.so.*
 *.dylib
 *.dll
+*.lib
+*.exp
+*.pyd
 dist/
 build/
 /env/
