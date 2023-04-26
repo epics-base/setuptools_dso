@@ -21,6 +21,7 @@ def define_DSOs(cmd):
 
     dso = DSO('dsodemo.lib.demo', ['src/foo.c', 'src/bar.cpp'],
         define_macros = [('BUILD_FOO', None)],
+        include_dirs = ['src/dsodemo/lib'],
         # demonstrate passing other compiler flags, either conditionally or not.
         # these are not actually used.
         extra_compile_args = ['-DALL'],
@@ -39,6 +40,7 @@ def define_DSOs(cmd):
 
 ext = Extension('dsodemo.ext.dtest', ['src/extension.cpp'],
     dsos=['dsodemo.lib.demo'],
+    include_dirs = ['src/dsodemo/lib'],
 )
 
 setup(
@@ -51,6 +53,7 @@ setup(
     install_requires = ['setuptools_dso'],
     packages=['dsodemo', 'dsodemo.ext', 'dsodemo.lib'],
     package_dir={'': 'src'},
+    include_package_data=True,
     # 'x_dsos' may be None, a list of DSO instances,
     # or a callable returning a list of DSOs.
     #x_dsos = [dso],
