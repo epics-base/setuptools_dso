@@ -3,6 +3,7 @@
 # See LICENSE
 import sys
 import os
+import re
 
 from collections import defaultdict
 from importlib import import_module # say that three times fast...
@@ -63,6 +64,65 @@ if sys.version_info<(3,4) or MP.get_start_method()!='fork':
                 return fn(*args, **kws)
         def apply_async(self, fn, args, kws):
             return self.DummyJob(fn, args, kws)
+
+def _system_concurrency():
+    if 'NUM_JOBS' in os.environ: # because it is so very cumbersome to pass extra build args through pip and setuptools ...
+        # we trust that our user knows what is being requested...
+        return int(os.environ['NUM_JOBS'])
+
+    # from this point, fail softly
+
+    # find available CPU concurrency
+    if hasattr(os, 'cpu_count'): # py3
+        njobs = os.cpu_count()
+    else:
+        njobs = 2 # why not?
+
+    # estimate available memory concurrency.  (lots of swapping erases any benefit of parallel compile)
+    nmem = njobs
+    if os.path.isfile('/proc/meminfo'): # Linux
+        meminfo={}
+        units = {
+            'kB': 1024,
+            None: 1,
+        }
+        # lines like:
+        #   MemTotal:       15951564 kB
+        #   HugePages_Total:       0
+        pat = re.compile(r'([^:]+):\s*([0-9]+)\s*(\S+)?')
+        with open('/proc/meminfo', 'r') as F:
+            for L in F:
+                M = pat.match(L)
+                if M is not None:
+                    name, val, unit = M.groups()
+                    meminfo[name] = float(val)*units[unit]
+                # else: # ignore unknown lines
+
+        avail_phy = meminfo.get('MemAvailable') # physical unused and disk cache
+        if avail_phy:
+            # Estimated peak physical RAM usage for a single GCC run.
+            # Measured max RSS for a single GCC run when compiling epics-base circa 7.0.7 is ~130 MB.
+            job_max_mem = 128 * 2**20
+            # Arbitrarily multiply because I don't have confidence in the generality of this measurement.
+            job_max_mem *= 4
+
+            nmem = int(avail_phy / job_max_mem)
+
+    njobs = max(1, min(njobs, nmem))
+
+    return njobs
+
+
+def system_concurrency():
+    """Estimate the number of concurrent compile jobs this system can perform.
+    
+    Tries to use both available CPU and memory resource information.
+    """
+    try:
+        return _system_concurrency()
+    except Exception as e: # fail softly with a pessimistic estimate
+        log.warn('Warning: Unable to estimate system concurrency, default to sequential build: %r'%e)
+        return 1
 
 def massage_dir_list(bdirs, indirs):
     """Process a list of directories for use with -I or -L
@@ -348,13 +408,8 @@ class build_dso(dso2libmixin, Command):
         # do the actual compiling
         objects = []
 
-        if 'NUM_JOBS' in os.environ: # because it is so very cumbersome to pass extra build args through pip and setuptools ...
-            nworkers = int(os.environ['NUM_JOBS'])
-        elif hasattr(os, 'cpu_count'): # py3
-            nworkers = os.cpu_count()
-        else:
-            nworkers = 2 # why not?
-
+        nworkers = system_concurrency()
+        log.info('effective NUM_JOBS=%d'%nworkers)
         with Pool(nworkers) as P:
             jobs = []
             for lang, srcs in SRC.items():
