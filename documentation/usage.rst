@@ -18,6 +18,15 @@ which functions like the ``build_ext`` command. ::
     python setup.py build_dso -i
     python setup.py build_ext -i
 
+
+.. _num_jobs:
+
+NUM_JOBS
+--------
+Use the ``$NUM_JOBS`` environment variable to override the default concurrency
+when compiling object files for DSOs.
+eg. ``export NUM_JOBS=1`` for a sequential build.
+
 Applying to your package
 ========================
 
