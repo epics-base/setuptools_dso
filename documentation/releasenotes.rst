@@ -5,8 +5,8 @@ Release Notes
 
 .. currentmodule:: setuptools_dso
 
-2.8 (UNRELEASED)
-----------------
+2.8 (May 2023)
+--------------
 
 * Fix linking to editable install on Windows  (Kirill Smelkov)
 * Try to limit parallel compile default by RAM as well as CPU.  On Linux only.
