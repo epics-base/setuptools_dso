@@ -147,7 +147,7 @@ build time information about the DSO including platform specific filename
 (eg. ``thelib.dll`` vs. ``libthelib.so``).
 
 Beginning with 2.0 the necessary additions to ``$PATH`` or calls to ``os.add_dll_directory()``
-can be made via `:py:func:`dylink_prepare_dso`.
+can be made via :py:func:`dylink_prepare_dso`.
 
 .. autofunction:: dylink_prepare_dso
 
