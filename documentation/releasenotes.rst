@@ -5,6 +5,11 @@ Release Notes
 
 .. currentmodule:: setuptools_dso
 
+2.9 (UNRELEASED)
+----------------
+
+* Extend and fixup :py:meth:`ProbeToolchain.eval_macros`.  Adds ``language=`` argument, and fix when headers are included.
+
 2.8 (May 2023)
 --------------
 

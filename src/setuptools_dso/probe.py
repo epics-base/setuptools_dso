@@ -244,7 +244,7 @@ class ProbeToolchain(object):
         log.info('Probe Member %s::%s -> %s', struct, member, 'Present' if ret else 'Absent')
         return ret
 
-    def eval_macros(self, macros, headers=None, define_macros=None, **kws):
+    def eval_macros(self, macros, headers=None, define_macros=None, language='c', **kws):
         """Expand C/C++ preprocessor macros.
 
         For undefined macros, None is returned.
@@ -256,6 +256,7 @@ class ProbeToolchain(object):
         :param str|list macros: A macro name string, or a list of such strings
         :param list headers: List of headers to include during all test compilations
         :param list define_macros: Extra macro definitions.
+        :param str language: Source code language: 'c' or 'c++'  (Added in 2.9)
         :param list include_dirs: Extra directories to search for headers
         :param list extra_preargs: Extra arguments to pass to the compiler
         :param list extra_postargs: Extra arguments to pass to the compiler
@@ -263,8 +264,8 @@ class ProbeToolchain(object):
         if isinstance(macros, str):
             macros = [macros]
 
-        srcname = os.path.join(self.tempdir, self._source_name('eval_macros_in', **kws))
-        outname = os.path.join(self.tempdir, self._source_name('eval_macros_out', **kws))
+        srcname = os.path.join(self.tempdir, self._source_name('eval_macros_in', language=language, **kws))
+        outname = os.path.join(self.tempdir, self._source_name('eval_macros_out', language=language, **kws))
 
         define_macros = self.define_macros + list(define_macros or [])
         src = ['#include <%s>'%h for h in self.headers+list(headers or ())]
@@ -272,9 +273,9 @@ class ProbeToolchain(object):
         for macro in macros:
             src.append('''
 #if defined({macro})
-void D_{macro} = |||{macro}|||;
+void D_{macro} = |||{macro}|||; void X_{macro};
 #else
-void U_{macro} = ||||||;
+void U_{macro} = ||||||; void X_{macro};
 #endif /* {macro} */
 '''.format(macro=macro))
 
@@ -288,18 +289,33 @@ void U_{macro} = ||||||;
         with open(outname, 'r') as F:
             out = F.read()
 
-        defs = {}
+        # Various pre-processor implementations are inconsistent about
+        # what "debris" is emitted in the output.
+        # eg. GCC strips C/C++ comments, while MSVC leaves them in.
 
-        for M in re.finditer(r'void ([DU])_([a-zA-Z_][a-zA-Z0-9_]*) = \|\|\|(.*?)\|\|\|;', out, re.MULTILINE):
-            du, name, val = M.groups()
+        # remove pre-processor directive lines
+        out = re.sub(r'^\s*#[^\n\r]*$', '', out, 0, re.MULTILINE)
+        # remove c++ line comments
+        out = re.sub(r'^//[^\n\r]*$', '', out, 0, re.MULTILINE)
+        # remove C comments
+        out = re.sub(r'/\*.*?\*/', '', out, 0, re.MULTILINE|re.DOTALL)
+
+        defs = OrderedDict()
+
+        for name in macros:
+            pat = r'.*void ([DU])_%(name)s = \|\|\|(.*?)\|\|\|; void X_%(name)s;.*'%{'name':name}
+            M = re.match(pat, out, re.MULTILINE|re.DOTALL)
+            if M is None:
+                raise RuntimeError("In %r\nFailed to find match for %r using %r"%(out, name, pat))
+            du, val = M.groups()
             if du=='D':
-                defs[name] = val
+                defs[name] = val.strip()
             elif du=='U':
                 defs[name] = None
             else:
                 raise ValueError("Logic error {0!r} : {1!r}".format(M, M.groups()) )
 
-        return OrderedDict([(name, defs[name]) for name in macros]) # will error in some def was extracted
+        return defs
 
     @property
     def info(self):

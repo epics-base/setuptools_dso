@@ -50,8 +50,18 @@ is a test
         ])
 
     def test_predef(self):
-        gnuc, clang, msc_ver = self.probe.eval_macros(['__GNUC__', '__clang__', '_MSC_VER'])
-        self.assertTrue(gnuc or clang or msc_ver)
+        # self ID for supported compilers
+        defs = self.probe.eval_macros(['__GNUC__', '__clang__', '_MSC_VER'])
+        self.assertTrue(any(defs.values()), str(defs))
+
+    def test_cxx(self):
+        defs = self.probe.eval_macros([
+            # ID for known C++ stdlib implementations
+            '__GLIBCXX__',     # g++
+            '_CPPLIB_VER',     # Dinkumware (aka. MSVC)
+            '_LIBCPP_VERSION', # clang
+        ], headers=['string'], language='c++')
+        self.assertTrue(any(defs.values()), str(defs))
 
     def test_info(self):
         info = self.probe.info
