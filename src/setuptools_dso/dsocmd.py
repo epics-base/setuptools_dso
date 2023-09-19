@@ -219,9 +219,18 @@ class dso2libmixin:
 
             try:
                 # also check if this DSO lives in an external package.
-                dsobase = os.path.dirname(import_module(parts[0]).__file__)
-                dsodir = os.path.join(dsobase, *parts[1:-1])
-                dsosearch.append(dsodir)
+                for i in range(len(1, parts)):
+                    basepackage = import_module(parts[0:i]).__file__
+                    if basepackage:
+                        dsobase = os.path.dirname(basepackage)
+                        if i < len(1, parts):
+                            dsodir = os.path.join(dsobase, *parts[i:-1])
+                        else:
+                            dsodir = dsobase
+                        dsosearch.append(dsodir)
+                        break
+                else:
+                    log.debug("Can't find %s: %s"%(parts, e))
             except ImportError as e:
                 log.debug("Can't find %s: %s"%(parts, e))
 
