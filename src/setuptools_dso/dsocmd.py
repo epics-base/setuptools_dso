@@ -219,11 +219,11 @@ class dso2libmixin:
 
             try:
                 # also check if this DSO lives in an external package.
-                for i in range(len(1, parts)):
-                    basepackage = import_module(parts[0:i]).__file__
+                for i in range(1, len(parts)):
+                    basepackage = import_module(".".join(parts[0:i])).__file__
                     if basepackage:
                         dsobase = os.path.dirname(basepackage)
-                        if i < len(1, parts):
+                        if i < len(parts):
                             dsodir = os.path.join(dsobase, *parts[i:-1])
                         else:
                             dsodir = dsobase
