@@ -20,6 +20,7 @@ which python
 python --version
 
 python setup.py clean -a
+pip install cython
 pip install -v .
 
 # inplace build
@@ -74,3 +75,52 @@ pip install --no-build-isolation --no-use-pep517 -v -e .
 cd ../..
 python -m dsodemo.cli
 python -m use_dsodemo.cli
+
+pip uninstall -y dsodemo
+pip uninstall -y use_dsodemo
+python -m dsodemo.cli 2>/dev/null && die "error: dsodemo not uninstalled"
+python -m use_dsodemo.cli 2>/dev/null && die "error: dsodemo not uninstalled"
+
+## Testing namespace packages - Build + install
+cd example/namespaces
+echo -e '\n* Namespace packages: build + install\n'
+cd package-core && python setup.py clean -a && cd ..
+cd package-dso && python setup.py clean -a && cd ..
+git clean -fdx
+python -c "import testnsp.testcore" 2>/dev/null && die "error: worktree must be clean"
+python -c "import testnsp.testdso" 2>/dev/null && die "error: worktree must be clean"
+cd package-core && pip install --no-build-isolation -v . && cd ..
+cd package-dso && pip install --no-build-isolation -v . && cd ..
+
+cd ../..
+python -c "import testnsp.testcore"
+python -c "import testnsp.testdso"
+python -c "import testnsp.testdso.thepyd"
+
+pip uninstall -y test-dso-nsp-dso
+pip uninstall -y test-dso-nsp-core
+python -c "import testnsp.testdso" && die "error: test-dso-nsp-dso not uninstalled"
+python -c "import testnsp.testcore" 2>/dev/null && die "error: test-dso-nsp-core not uninstalled"
+
+## Testing namespace packages - Editable+ install
+cd example/namespaces
+echo -e '\n* Namespace packages: editable install\n'
+cd package-core && python setup.py clean -a && cd ..
+cd package-dso && python setup.py clean -a && cd ..
+git clean -fdx
+python -c "import testnsp.testcore" 2>/dev/null && die "error: worktree must be clean"
+python -c "import testnsp.testdso" 2>/dev/null && die "error: worktree must be clean"
+cd package-core && pip install --no-build-isolation -v -e . && cd ..
+cd package-dso && pip install --no-build-isolation -v -e . && cd ..
+
+cd ../..
+python -c "import testnsp.testcore"
+python -c "import testnsp.testdso"
+python -c "import testnsp.testdso.thepyd"
+
+pip uninstall -y test-dso-nsp-dso
+pip uninstall -y test-dso-nsp-core
+python -c "import testnsp.testdso" 2>/dev/null && die "error: test-dso-nsp-dso not uninstalled"
+python -c "import testnsp.testcore" 2>/dev/null && die "error: test-dso-nsp-core not uninstalled"
+
+echo "Done"
