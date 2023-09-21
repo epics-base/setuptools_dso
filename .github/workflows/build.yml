@@ -54,7 +54,7 @@ jobs:
         shell: bash
         run: |
           set -x
-          pip download -d dist setuptools wheel nose2
+          pip download -d dist setuptools wheel nose2 cython
           python -m pip install -v --no-index -f dist setuptools wheel nose2
           python -m nose2 -h
       - name: Build/Install
@@ -119,6 +119,32 @@ jobs:
           find junk
           ls junk/*/*.dist-info/WHEEL
           ! ls junk/*/*/purelib
+      - name: Test Namespace Packages with conventional install
+        shell: bash
+        run: |
+          set -x
+          cd example/namespaces
+          git clean -fdx .
+          rm -rf */dist */build */*.egg-info
+          python -m pip install -v --no-build-isolation --no-index ./package-core
+          python -m pip install -v --no-build-isolation --no-index ./package-dso
+          cd ../..
+          python -c "import testnsp.testcore"
+          python -c "import testnsp.testdso"
+          python -c "import testnsp.testdso.thepyd"
+      - name: Test Namespace Packages with editable install
+        shell: bash
+        run: |
+          set -x
+          cd example/namespaces
+          git clean -fdx .
+          rm -rf */dist */build */*.egg-info
+          python -m pip install -v --no-build-isolation --no-index -e ./package-core
+          python -m pip install -v --no-build-isolation --no-index -e ./package-dso
+          cd ../..
+          python -c "import testnsp.testcore"
+          python -c "import testnsp.testdso"
+          python -c "import testnsp.testdso.thepyd"
 
   manylinux:
     runs-on: ubuntu-latest
