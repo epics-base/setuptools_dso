@@ -220,7 +220,7 @@ class dso2libmixin:
             try:
                 # also check if this DSO lives in an external package.
                 for i in range(1, len(parts)):
-                    basepackage = import_module(".".join(parts[0:i])).__file__
+                    basepackage = getattr(import_module(".".join(parts[0:i])), "__file__", None)
                     if basepackage:
                         dsobase = os.path.dirname(basepackage)
                         if i < len(parts):
