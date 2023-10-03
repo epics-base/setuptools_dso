@@ -84,6 +84,8 @@ python -m use_dsodemo.cli 2>/dev/null && die "error: dsodemo not uninstalled"
 ## Testing namespace packages - Build + install
 cd example/namespaces
 echo -e '\n* Namespace packages: build + install\n'
+cd package-core && python setup.py clean -a && cd ..
+cd package-dso && python setup.py clean -a && cd ..
 git clean -fdx
 python -c "import testnsp.testcore" 2>/dev/null && die "error: worktree must be clean"
 python -c "import testnsp.testdso" 2>/dev/null && die "error: worktree must be clean"
@@ -103,6 +105,8 @@ python -c "import testnsp.testcore" 2>/dev/null && die "error: test-dso-nsp-core
 ## Testing namespace packages - Editable+ install
 cd example/namespaces
 echo -e '\n* Namespace packages: editable install\n'
+cd package-core && python setup.py clean -a && cd ..
+cd package-dso && python setup.py clean -a && cd ..
 git clean -fdx
 python -c "import testnsp.testcore" 2>/dev/null && die "error: worktree must be clean"
 python -c "import testnsp.testdso" 2>/dev/null && die "error: worktree must be clean"
