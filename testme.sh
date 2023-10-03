@@ -89,8 +89,8 @@ cd package-dso && python setup.py clean -a && cd ..
 git clean -fdx
 python -c "import testnsp.testcore" 2>/dev/null && die "error: worktree must be clean"
 python -c "import testnsp.testdso" 2>/dev/null && die "error: worktree must be clean"
-pip install --no-build-isolation -v ./package-core
-pip install --no-build-isolation -v ./package-dso
+cd package-core && pip install --no-build-isolation -v . && cd ..
+cd package-dso && pip install --no-build-isolation -v . && cd ..
 
 cd ../..
 python -c "import testnsp.testcore"
@@ -110,8 +110,8 @@ cd package-dso && python setup.py clean -a && cd ..
 git clean -fdx
 python -c "import testnsp.testcore" 2>/dev/null && die "error: worktree must be clean"
 python -c "import testnsp.testdso" 2>/dev/null && die "error: worktree must be clean"
-pip install --no-build-isolation -v -e ./package-core
-pip install --no-build-isolation -v -e ./package-dso
+cd package-core && pip install --no-build-isolation -v -e . && cd ..
+cd package-dso && pip install --no-build-isolation -v -e . && cd ..
 
 cd ../..
 python -c "import testnsp.testcore"

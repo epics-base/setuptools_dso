@@ -128,8 +128,8 @@ jobs:
           cd package-dso && python setup.py clean -a && cd ..
           git clean -fdx .
           rm -rf */dist */build */*.egg-info
-          python -m pip install -v --no-build-isolation --no-index ./package-core
-          python -m pip install -v --no-build-isolation --no-index ./package-dso
+          cd package-core && python -m pip install -v --no-build-isolation --no-index . && cd ..
+          cd package-dso && python -m pip install -v --no-build-isolation --no-index . && cd ..
           cd ../..
           python -c "import testnsp.testcore"
           python -c "import testnsp.testdso"
@@ -143,8 +143,8 @@ jobs:
           cd package-dso && python setup.py clean -a && cd ..
           git clean -fdx .
           rm -rf */dist */build */*.egg-info
-          python -m pip install -v --no-build-isolation --no-index -e ./package-core
-          python -m pip install -v --no-build-isolation --no-index -e ./package-dso
+          cd package-core && python -m pip install -v --no-build-isolation --no-index -e . && cd ..
+          cd package-dso && python -m pip install -v --no-build-isolation --no-index -e . && cd ..
           cd ../..
           python -c "import testnsp.testcore"
           python -c "import testnsp.testdso"
