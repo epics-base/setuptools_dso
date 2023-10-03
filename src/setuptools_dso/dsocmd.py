@@ -489,6 +489,15 @@ class build_dso(dso2libmixin, Command):
                 os.symlink(solibbase, outbaselib)
             #self.copy_file(outlib, outbaselib) # link="sym" seem to get the target path wrong
 
+        ##############
+        ### TEST STUB
+        if self.inplace:
+            print("####----#### INPLACE BUILD")
+        else:
+            print("####----#### NOT INPLACE BUILD")
+        ### END TEST STUB
+        ##############
+
         if self.inplace:
             build_py = self.get_finalized_command('build_py')
             pkg = '.'.join(dso.name.split('.')[:-1])    # path.to.dso -> path.to
