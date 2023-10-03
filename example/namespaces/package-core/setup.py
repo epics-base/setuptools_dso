@@ -1,9 +1,9 @@
-from setuptools import setup, find_namespace_packages
+from setuptools import setup
 kwargs = {
     "name" : "test-dso-nsp-core",
     "version" : "0.0.1",
     "install_requires" : [],
-    "packages" : find_namespace_packages(include = ["testnsp.testcore", "testnsp.testcore.*"]),
+    "packages" : ["testnsp", "testnsp.testcore"],
 }
 
 setup(**kwargs)
