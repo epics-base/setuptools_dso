@@ -295,8 +295,6 @@ class build_dso(dso2libmixin, Command):
     # eg. allow injection of extra work (eg. code generation)
     # before DSOs are built
     sub_commands = []
-    
-    editable_mode: bool = False
 
     def initialize_options (self):
         self.dsos = None
@@ -305,7 +303,6 @@ class build_dso(dso2libmixin, Command):
         self.build_temp = None
         self.inplace = None
         self.force = None
-        self.editable_mode = False
 
     def finalize_options(self):
 
@@ -593,6 +590,15 @@ class build_ext(dso2libmixin, _build_ext):
 
         self.include_dirs = massage_dir_list([self.build_temp], self.include_dirs or [])
         self.library_dirs = massage_dir_list([self.build_lib]  , self.library_dirs or [])
+        
+        if getattr(self, "editable_mode", False):
+            dist = self.distribution
+            for cmd_name in self.get_sub_commands():
+                cmd = dist.get_command_obj(cmd_name)
+                if hasattr(cmd, "editable_mode"):
+                    cmd.editable_mode = True
+                elif hasattr(cmd, "inplace"):
+                    cmd.inplace = True
 
     def run(self):
         # original setuptools/distutils don't call sub_commands for build_ext
