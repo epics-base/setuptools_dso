@@ -55,7 +55,7 @@ jobs:
         run: |
           set -x
           pip download -d dist setuptools wheel nose2 cython
-          python -m pip install -v --no-index -f dist setuptools wheel nose2
+          python -m pip install -v --no-index -f dist setuptools wheel nose2 cython
           python -m nose2 -h
       - name: Build/Install
         shell: bash
