@@ -492,15 +492,15 @@ class build_dso(dso2libmixin, Command):
         ##############
         ### TEST STUB
         if self.inplace:
-            print("####----#### INPLACE BUILD")
+            print("#### BUILD DSO #### INPLACE BUILD")
         else:
-            print("####----#### NOT INPLACE BUILD")
+            print("#### BUILD DSO #### NOT INPLACE BUILD")
         if not hasattr(self, "editable_mode"):
-            print("####----#### EDITABLE NOT SUPPORTED")
+            print("#### BUILD DSO #### EDITABLE NOT SUPPORTED")
         elif getattr(self, "editable_mode"):
-            print("####----#### EDITABLE MODE")
+            print("#### BUILD DSO #### EDITABLE MODE")
         else:
-            print("####----#### NOT EDITABLE MODE")
+            print("#### BUILD DSO #### NOT EDITABLE MODE")
         ### END TEST STUB
         ##############
 
@@ -590,6 +590,21 @@ class build_ext(dso2libmixin, _build_ext):
 
         self.include_dirs = massage_dir_list([self.build_temp], self.include_dirs or [])
         self.library_dirs = massage_dir_list([self.build_lib]  , self.library_dirs or [])
+
+        ##############
+        ### TEST STUB
+        if self.inplace:
+            print("#### BUILD EXT #### INPLACE BUILD")
+        else:
+            print("#### BUILD EXT #### NOT INPLACE BUILD")
+        if not hasattr(self, "editable_mode"):
+            print("#### BUILD EXT #### EDITABLE NOT SUPPORTED")
+        elif getattr(self, "editable_mode"):
+            print("#### BUILD EXT #### EDITABLE MODE")
+        else:
+            print("#### BUILD EXT #### NOT EDITABLE MODE")
+        ### END TEST STUB
+        ##############
         
         if getattr(self, "editable_mode", False):
             dist = self.distribution
