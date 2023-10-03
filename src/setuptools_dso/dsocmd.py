@@ -576,6 +576,17 @@ class build_ext(dso2libmixin, _build_ext):
         self.include_dirs = massage_dir_list([self.build_temp], self.include_dirs or [])
         self.library_dirs = massage_dir_list([self.build_lib]  , self.library_dirs or [])
 
+        self._propagate_inplace()
+
+    def _propagate_inplace(self):
+        # Hack inspired from https://github.com/pypa/setuptools/blob/8ad627dfd580ac9cad2fd9c3a51dc173c5a38eca/setuptools/command/editable_wheel.py#L239
+        if self.inplace:
+            dist = self.distribution
+            for cmd_name in self.get_sub_commands():
+                cmd = dist.get_command_obj(cmd_name)
+                if hasattr(cmd, "inplace"):
+                    cmd.inplace = True
+
     def run(self):
         # original setuptools/distutils don't call sub_commands for build_ext
         for cmd_name in self.get_sub_commands():
