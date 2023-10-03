@@ -495,6 +495,12 @@ class build_dso(dso2libmixin, Command):
             print("####----#### INPLACE BUILD")
         else:
             print("####----#### NOT INPLACE BUILD")
+        if not hasattr(self, "editable_mode"):
+            print("####----#### EDITABLE NOT SUPPORTED")
+        elif getattr(self, "editable_mode"):
+            print("####----#### EDITABLE MODE")
+        else:
+            print("####----#### NOT EDITABLE MODE")
         ### END TEST STUB
         ##############
 
