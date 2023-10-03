@@ -12,7 +12,6 @@ authors = [
     {name = "Nathan/Eilisha Shiraini", email = "jean.bon@free.fr"},
 ]
 description = "Namespace package to test Setuptools-DSO"
-requires-python = ">=3.11"
 
 [tool.setuptools]
 include-package-data = false
