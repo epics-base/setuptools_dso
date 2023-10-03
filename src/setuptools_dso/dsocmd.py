@@ -295,6 +295,8 @@ class build_dso(dso2libmixin, Command):
     # eg. allow injection of extra work (eg. code generation)
     # before DSOs are built
     sub_commands = []
+    
+    editable_mode: bool = False
 
     def initialize_options (self):
         self.dsos = None
