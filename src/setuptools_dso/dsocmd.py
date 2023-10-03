@@ -303,6 +303,7 @@ class build_dso(dso2libmixin, Command):
         self.build_temp = None
         self.inplace = None
         self.force = None
+        self.editable_mode = False
 
     def finalize_options(self):
 
