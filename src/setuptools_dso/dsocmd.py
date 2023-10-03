@@ -489,21 +489,6 @@ class build_dso(dso2libmixin, Command):
                 os.symlink(solibbase, outbaselib)
             #self.copy_file(outlib, outbaselib) # link="sym" seem to get the target path wrong
 
-        ##############
-        ### TEST STUB
-        if self.inplace:
-            print("#### BUILD DSO #### INPLACE BUILD")
-        else:
-            print("#### BUILD DSO #### NOT INPLACE BUILD")
-        if not hasattr(self, "editable_mode"):
-            print("#### BUILD DSO #### EDITABLE NOT SUPPORTED")
-        elif getattr(self, "editable_mode"):
-            print("#### BUILD DSO #### EDITABLE MODE")
-        else:
-            print("#### BUILD DSO #### NOT EDITABLE MODE")
-        ### END TEST STUB
-        ##############
-
         if self.inplace:
             build_py = self.get_finalized_command('build_py')
             pkg = '.'.join(dso.name.split('.')[:-1])    # path.to.dso -> path.to
@@ -591,31 +576,11 @@ class build_ext(dso2libmixin, _build_ext):
         self.include_dirs = massage_dir_list([self.build_temp], self.include_dirs or [])
         self.library_dirs = massage_dir_list([self.build_lib]  , self.library_dirs or [])
 
-        ##############
-        ### TEST STUB
+        self._propagate_inplace()
+
+    def _propagate_inplace(self):
+        # Hack inspired from https://github.com/pypa/setuptools/blob/8ad627dfd580ac9cad2fd9c3a51dc173c5a38eca/setuptools/command/editable_wheel.py#L239
         if self.inplace:
-            print("#### BUILD EXT #### INPLACE BUILD")
-        else:
-            print("#### BUILD EXT #### NOT INPLACE BUILD")
-        if not hasattr(self, "editable_mode"):
-            print("#### BUILD EXT #### EDITABLE NOT SUPPORTED")
-        elif getattr(self, "editable_mode"):
-            print("#### BUILD EXT #### EDITABLE MODE")
-        else:
-            print("#### BUILD EXT #### NOT EDITABLE MODE")
-        ### END TEST STUB
-        ##############
-        
-        if getattr(self, "editable_mode", False):
-            dist = self.distribution
-            for cmd_name in self.get_sub_commands():
-                cmd = dist.get_command_obj(cmd_name)
-                if hasattr(cmd, "editable_mode"):
-                    cmd.editable_mode = True
-                elif hasattr(cmd, "inplace"):
-                    cmd.inplace = True
-        
-        if getattr(self, "inplace", False):
             dist = self.distribution
             for cmd_name in self.get_sub_commands():
                 cmd = dist.get_command_obj(cmd_name)
