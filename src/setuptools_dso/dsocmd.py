@@ -614,6 +614,13 @@ class build_ext(dso2libmixin, _build_ext):
                     cmd.editable_mode = True
                 elif hasattr(cmd, "inplace"):
                     cmd.inplace = True
+        
+        if getattr(self, "inplace", False):
+            dist = self.distribution
+            for cmd_name in self.get_sub_commands():
+                cmd = dist.get_command_obj(cmd_name)
+                if hasattr(cmd, "inplace"):
+                    cmd.inplace = True
 
     def run(self):
         # original setuptools/distutils don't call sub_commands for build_ext
