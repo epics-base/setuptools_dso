@@ -5,6 +5,12 @@ Release Notes
 
 .. currentmodule:: setuptools_dso
 
+2.10 (UNRELEASED)
+-----------------
+
+* Support for namespace packages (Nathan Shiraini)
+* Propagate inplace to all sub-Command (Nathan Shiraini)
+
 2.9 (June 2023)
 ---------------
 
