@@ -195,6 +195,31 @@ class DSO(_Extension):
         self.gen_info = gen_info
 
 class dso2libmixin:
+    def __add_ext_candidates(self, parts, dsosearch):
+        parts = parts[:-1] # exclude DSO name
+        try:
+            # Checking if this DSO lives in an external package.
+            # Find full path names of directories which may contain DSO file.
+            # To accomidate namespace packages, search for DSO 'foo.bar.baz.mydso'
+            # in modules: 'foo', 'foo.bar', then 'foo.bar.baz'
+            # eg. if 'foo.bar' is '/some/python/bar/__init__.py'
+            #     then look for DSO in '/some/python/bar/baz'
+            for i in range(1, len(parts)):
+                mparts, fparts = parts[:i], parts[i:]
+                # PEP420 states that a namespace module "Does not have a __file__ attribute"
+                # However, cpython after 3.6 has __file__=None.
+                basepackage = getattr(import_module(".".join(mparts)), "__file__", None)
+                if basepackage:
+                    # found actual (not namespace) module
+                    dsobase = os.path.dirname(basepackage) # exclude __init__.py file
+                    dsodir = os.path.join(dsobase, *fparts) # append directories within top package
+                    dsosearch.append(dsodir)
+                    break
+            else:
+                log.debug("No external candidates for %s"%parts)
+        except ImportError as e:
+            log.debug("Error finding external candidates for %s: %s"%(parts, e))
+
     def dso2lib_pre(self, ext):
         # ext may be our Extension or DSO
         mypath = os.path.join('.', *ext.name.split('.')[:-1])
@@ -217,22 +242,7 @@ class dso2libmixin:
 
             dsosearch = [os.path.join(self.build_lib, *parts[:-1])] # maybe we just built it
 
-            try:
-                # also check if this DSO lives in an external package.
-                for i in range(1, len(parts)):
-                    basepackage = getattr(import_module(".".join(parts[0:i])), "__file__", None)
-                    if basepackage:
-                        dsobase = os.path.dirname(basepackage)
-                        if i < len(parts):
-                            dsodir = os.path.join(dsobase, *parts[i:-1])
-                        else:
-                            dsodir = dsobase
-                        dsosearch.append(dsodir)
-                        break
-                else:
-                    log.debug("Can't find %s: %s"%(parts, e))
-            except ImportError as e:
-                log.debug("Can't find %s: %s"%(parts, e))
+            self.__add_ext_candidates(parts, dsosearch)
 
             for candidate in dsosearch:
                 C = os.path.join(candidate, libname)
