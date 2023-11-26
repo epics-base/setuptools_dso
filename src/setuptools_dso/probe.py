@@ -421,6 +421,8 @@ class ToolchainInfo(object):
             ('__i386__', 'little'),
             ('__ARMEB__', 'big'),
             ('__ARMEL__', 'little'),
+            ('__AARCH64EB__', 'big'),
+            ('__AARCH64EL__', 'little'),
         ],
     }
 
