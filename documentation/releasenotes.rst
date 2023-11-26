@@ -5,11 +5,12 @@ Release Notes
 
 .. currentmodule:: setuptools_dso
 
-2.10 (UNRELEASED)
------------------
+2.10 (Nov 2023)
+---------------
 
 * Support for namespace packages (Nathan Shiraini)
 * Propagate inplace to all sub-Command (Nathan Shiraini)
+* correctly test for aarch64 endianness
 
 2.9 (June 2023)
 ---------------
