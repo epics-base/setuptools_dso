@@ -4,11 +4,15 @@
 import os
 from functools import partial
 
-from distutils.ccompiler import (new_compiler as _new_compiler, gen_preprocess_options, CCompiler)
-from distutils.dep_util import newer
-from distutils.errors import DistutilsExecError, CompileError
-from distutils.sysconfig import customize_compiler
-from distutils import log
+# Seems like the easiest fix for now as these don't appear
+# to be exposed directly through setuptools yet
+# See https://github.com/pypa/setuptools/issues/2806
+from setuptools._distutils.ccompiler import (new_compiler as _new_compiler, gen_preprocess_options, CCompiler)
+from setuptools._distutils.sysconfig import customize_compiler
+
+from setuptools.modified import newer
+from setuptools.errors import ExecError, CompileError
+import logging as log
 
 __all__ = (
     'new_compiler',
@@ -60,7 +64,7 @@ def _msvc_preprocess(self, source, output_file=None, macros=None,
             self.mkpath(os.path.dirname(output_file))
         try:
             self.spawn(pp_args)
-        except DistutilsExecError as msg:
+        except ExecError as msg:
             raise CompileError(msg)
 
 def new_compiler(**kws):

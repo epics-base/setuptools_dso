@@ -9,6 +9,7 @@ from itertools import chain
 import re
 import os
 import shutil
+import logging as log
 
 import tempfile
 try:
@@ -28,8 +29,7 @@ except ImportError:
                 shutil.rmtree(self.name, ignore_errors=True)
                 self.name = None
 
-from distutils.errors import DistutilsExecError, CompileError
-from distutils import log
+from setuptools.errors import ExecError, CompileError
 
 from .compiler import new_compiler
 
@@ -118,7 +118,7 @@ class ProbeToolchain(object):
         try:
             self.compile(src, **kws)
             return True
-        except (DistutilsExecError, CompileError):
+        except (ExecError, CompileError):
             return False
 
     def check_includes(self, headers, **kws):

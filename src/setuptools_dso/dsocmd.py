@@ -9,6 +9,7 @@ from collections import defaultdict
 from importlib import import_module # say that three times fast...
 from multiprocessing import Pool
 import multiprocessing as MP
+import logging as log
 
 try:
     from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
@@ -19,15 +20,8 @@ from setuptools import Command, Distribution, Extension as _Extension
 from setuptools.command.build_ext import build_ext as _build_ext
 from setuptools.command.install import install as _install
 from setuptools.command.bdist_egg import bdist_egg as _bdist_egg
-try:
-    # attempt at future proofing
-    # doesn't exist as of setuptools 52.0.0
-    from setuptools.command.build import build as _build
-except ImportError:
-    from distutils.command.build import build as _build
-
-from distutils.dep_util import newer_group
-from distutils import log
+from setuptools.command.build import build as _build
+from setuptools.modified import newer_group
 
 from .compiler import new_compiler
 

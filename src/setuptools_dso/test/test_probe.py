@@ -8,8 +8,8 @@ from .. import probe
 
 class TryCompile(unittest.TestCase):
     def setUp(self):
-        from distutils import log
-        log.set_threshold(log.DEBUG)
+        import logging
+        log = logging.Logger(name="test", level=logging.DEBUG)
         self.probe = probe.ProbeToolchain(verbose=True)
 
     def test_try_compile(self):
