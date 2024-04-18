@@ -19,6 +19,7 @@ except ImportError:
     from distutils.dep_util import newer
     from distutils.errors import DistutilsExecError as ExecError
     from distutils.errors import CompileError
+    from distutils.sysconfig import customize_compiler
 import logging as log
 
 __all__ = (
