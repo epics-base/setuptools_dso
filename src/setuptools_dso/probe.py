@@ -29,7 +29,11 @@ except ImportError:
                 shutil.rmtree(self.name, ignore_errors=True)
                 self.name = None
 
-from setuptools.errors import ExecError, CompileError
+try:
+    from setuptools.errors import ExecError, CompileError
+except ImportError:
+    from distutils.errors import DistutilsExecError as ExecError
+    from distutils.errors import CompileError
 
 from .compiler import new_compiler
 

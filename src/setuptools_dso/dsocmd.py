@@ -20,8 +20,14 @@ from setuptools import Command, Distribution, Extension as _Extension
 from setuptools.command.build_ext import build_ext as _build_ext
 from setuptools.command.install import install as _install
 from setuptools.command.bdist_egg import bdist_egg as _bdist_egg
-from setuptools.command.build import build as _build
-from setuptools.modified import newer_group
+
+try:
+    # Allows for 3.12 support
+    from setuptools.command.build import build as _build
+    from setuptools.modified import newer_group
+except ImportError:
+    from distutils.command.build import build as _build
+    from distutils.dep_util import newer_group
 
 from .compiler import new_compiler
 

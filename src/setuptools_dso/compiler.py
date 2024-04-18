@@ -4,14 +4,21 @@
 import os
 from functools import partial
 
-# Seems like the easiest fix for now as these don't appear
-# to be exposed directly through setuptools yet
-# See https://github.com/pypa/setuptools/issues/2806
-from setuptools._distutils.ccompiler import (new_compiler as _new_compiler, gen_preprocess_options, CCompiler)
-from setuptools._distutils.sysconfig import customize_compiler
+try:
+    # Allows for 3.12 support
+    from setuptools.modified import newer
+    from setuptools.errors import ExecError, CompileError
 
-from setuptools.modified import newer
-from setuptools.errors import ExecError, CompileError
+    # Seems like the easiest fix for now as these don't appear
+    # to be exposed directly through setuptools yet
+    # See https://github.com/pypa/setuptools/issues/2806
+    from setuptools._distutils.ccompiler import (new_compiler as _new_compiler, gen_preprocess_options, CCompiler)
+    from setuptools._distutils.sysconfig import customize_compiler
+except ImportError:
+    from distutils.ccompiler import (new_compiler as _new_compiler, gen_preprocess_options, CCompiler)
+    from distutils.dep_util import newer
+    from distutils.errors import DistutilsExecError as ExecError
+    from distutils.errors import CompileError
 import logging as log
 
 __all__ = (
