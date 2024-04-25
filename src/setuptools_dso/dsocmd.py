@@ -121,7 +121,7 @@ def system_concurrency():
     try:
         return _system_concurrency()
     except Exception as e: # fail softly with a pessimistic estimate
-        log.warn('Warning: Unable to estimate system concurrency, default to sequential build: %r'%e)
+        log.warning('Warning: Unable to estimate system concurrency, default to sequential build: %r'%e)
         return 1
 
 def massage_dir_list(bdirs, indirs):

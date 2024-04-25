@@ -42,7 +42,7 @@ def setup(**kws):
             if error:
                 raise AssertionError("cmdclass[%s] must be subclass of %s" % (cmdclass[name], klass))
             else:
-                log.warn("cmdclass[%s] must be subclass of %s, setuptools-dso functionality may be lost",
+                log.warning("cmdclass[%s] must be subclass of %s, setuptools-dso functionality may be lost",
                          cmdclass[name], klass)
     cmdclass_setdefault('bdist_egg', bdist_egg)
     cmdclass_setdefault('build_dso', build_dso)

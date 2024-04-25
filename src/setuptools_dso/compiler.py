@@ -35,7 +35,7 @@ __all__ = (
 # self.include_dirs list, growing without bound.
 # With MSVC this eventually fails.
 def _patch_fix_compile_args(realfn, output_dir, macros, include_dirs, *args, **kws):
-    log.warn('_patch_fix_compile_args include_dirs=%r', include_dirs)
+    log.warning('_patch_fix_compile_args include_dirs=%r', include_dirs)
     # turn include_dirs=None into include_dirs=[]
     return realfn(output_dir, macros, include_dirs or [], *args, **kws)
 
@@ -83,7 +83,7 @@ def new_compiler(**kws):
 
     # setuptools 63.4.3 adds compiler.__class__.include_dirs
     if hasattr(compiler.__class__, 'include_dirs') and hasattr(compiler, '_fix_compile_args'):
-        log.warn('Patch _fix_compile_args() to avoid modification to compiler.include_dirs')
+        log.warning('Patch _fix_compile_args() to avoid modification to compiler.include_dirs')
         compiler._fix_compile_args = partial(_patch_fix_compile_args, compiler._fix_compile_args)
 
     if compiler.compiler_type=='msvc': # either msvccompiler or msvc9compiler

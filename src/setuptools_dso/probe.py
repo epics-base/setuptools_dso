@@ -459,7 +459,7 @@ class ToolchainInfo(object):
             self.compiler_version = tuple(int(p) for p in (FV[:2], FV[2:4], FV[4:]))
 
         else:
-            log.warn("Warning: unable to classify compiler")
+            log.warning("Warning: unable to classify compiler")
 
         for attr, info in self.__info.items():
             for macro, val in info:
@@ -467,7 +467,7 @@ class ToolchainInfo(object):
                     setattr(self, attr, val)
 
             if getattr(self, attr) is None:
-                log.warn("Warning: unable to classify "+attr)
+                log.warning("Warning: unable to classify "+attr)
 
         self.address_width = 8*TC.sizeof('void*')
 
