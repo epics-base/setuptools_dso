@@ -26,6 +26,14 @@ jobs:
           - os: ubuntu-latest
             python-version: "3.6"
 
+          # MacOS 14.4.1 for arm64 doesn't support Python < 3.8
+          - os: macos-latest
+            python-version: "3.5"
+          - os: macos-latest
+            python-version: "3.6"
+          - os: macos-latest
+            python-version: "3.7"
+
         include:
           # has Microsoft Visual C++ 14.0
           - os: windows-2019
@@ -36,6 +44,14 @@ jobs:
             python-version: "3.5"
           - os: ubuntu-20.04
             python-version: "3.6"
+
+          # MacOS 13 required for Python < 3.8
+          - os: macos-13
+            python-version: "3.5"
+          - os: macos-13
+            python-version: "3.6"
+          - os: macos-13
+            python-version: "3.7"
 
     steps:
       - uses: actions/checkout@v3
