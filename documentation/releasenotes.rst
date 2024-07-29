@@ -5,6 +5,11 @@ Release Notes
 
 .. currentmodule:: setuptools_dso
 
+2.11 (UNRELEASED)
+-----------------
+
+* Support for cpython 3.12 (Oliver Copping)
+
 2.10 (Nov 2023)
 ---------------
 
