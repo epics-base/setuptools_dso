@@ -38,9 +38,9 @@ jobs:
             python-version: "3.7"
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Prepare
@@ -235,7 +235,7 @@ jobs:
             piparch: "x86_64"
             pyver: "cp312-cp312"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Test
         run: |
           # can't use GHA native docker support since GHA magic binaries need .so absent from old manylinux images :(
@@ -282,9 +282,9 @@ jobs:
     needs: [test, manylinux]
     name: Upload
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.7"
       - name: Install dependencies
