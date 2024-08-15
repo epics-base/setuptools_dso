@@ -9,6 +9,7 @@ Release Notes
 -----------------
 
 * Support for cpython 3.12 (Oliver Copping)
+* Fix OSX w/ fix injection of -dynamiclib, injection of -dynamiclib
 
 2.10 (Nov 2023)
 ---------------
