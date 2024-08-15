@@ -347,9 +347,11 @@ class build_dso(dso2libmixin, Command):
 
         # fixup for MAC to build dylib (MH_DYLIB) instead of bundle (MH_BUNDLE)
         if sys.platform == 'darwin':
-            for i,val in enumerate(self.compiler.linker_so):
-                if val=='-bundle':
-                    self.compiler.linker_so[i] = '-dynamiclib'
+            for attr in ('linker_so', 'linker_so_cxx'):
+                linker_so = getattr(self.compiler, attr, [])
+                for i,val in enumerate(linker_so):
+                    if val=='-bundle':
+                        linker_so[i] = '-dynamiclib'
 
         for dso in self.dsos:
             self.build_dso(dso)
