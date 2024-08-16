@@ -5,8 +5,8 @@ Release Notes
 
 .. currentmodule:: setuptools_dso
 
-2.11 (UNRELEASED)
------------------
+2.11 (Aug 2024)
+---------------
 
 * Support for cpython 3.12 (Oliver Copping)
 * Fix OSX w/ fix injection of -dynamiclib, injection of -dynamiclib
