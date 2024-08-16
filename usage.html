@@ -1,0 +1,409 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Working with packages using setuptools_dso &#8212; setuptools_dso  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Probing Toolchain" href="probe.html" />
+    <link rel="prev" title="setuptools extension for building non-Python Dynamic Shared Objects" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="working-with-packages-using-setuptools-dso">
+<h1>Working with packages using setuptools_dso<a class="headerlink" href="#working-with-packages-using-setuptools-dso" title="Permalink to this heading">¶</a></h1>
+<p>Packages using <cite>setuptools_dso</cite> can for the most part be treated like any other python package.
+Distribution through <a class="reference external" href="https://pypi.org/">pypi.org</a> as source and/or binary (wheels) is possible.
+Like other packages containing compiled code, use of egg binaries is not supported.</p>
+<p>Use of PIP is encouraged.
+The <a class="reference internal" href="index.html#module-setuptools_dso" title="setuptools_dso"><code class="xref py py-mod docutils literal notranslate"><span class="pre">setuptools_dso</span></code></a> package needs to be installed when manually invoking <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> scripts in dependent packages.
+eg. to generate source tars with <code class="docutils literal notranslate"><span class="pre">setup.py</span> <span class="pre">sdist</span></code>.</p>
+<p>Developers wishing to work with an in-place build will need to use the added <code class="docutils literal notranslate"><span class="pre">build_dso</span></code> command,
+which functions like the <code class="docutils literal notranslate"><span class="pre">build_ext</span></code> command.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build_dso</span> <span class="o">-</span><span class="n">i</span>
+<span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build_ext</span> <span class="o">-</span><span class="n">i</span>
+</pre></div>
+</div>
+<section id="num-jobs">
+<span id="id1"></span><h2>NUM_JOBS<a class="headerlink" href="#num-jobs" title="Permalink to this heading">¶</a></h2>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">$NUM_JOBS</span></code> environment variable to override the default concurrency
+when compiling object files for DSOs.
+eg. <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">NUM_JOBS=1</span></code> for a sequential build.</p>
+</section>
+</section>
+<section id="applying-to-your-package">
+<h1>Applying to your package<a class="headerlink" href="#applying-to-your-package" title="Permalink to this heading">¶</a></h1>
+<p>The <a class="reference external" href="https://github.com/mdavidsaver/setuptools_dso/tree/master/example">example/</a> demonstrates building a non-python library,
+and linking it with a python extension module.</p>
+<p>To properly support <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">...</span></code>, it is recommended to include a
+<a class="reference external" href="https://www.python.org/dev/peps/pep-0518/">pyproject.toml</a>
+file containing at least:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">build</span><span class="o">-</span><span class="n">system</span><span class="p">]</span>
+<span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;setuptools&quot;</span><span class="p">,</span> <span class="s2">&quot;wheel&quot;</span><span class="p">,</span> <span class="s2">&quot;setuptools_dso&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>This ensures that <code class="docutils literal notranslate"><span class="pre">setuptools_dso</span></code> is available to be imported by <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>.</p>
+<p>Add a <code class="docutils literal notranslate"><span class="pre">MANIFEST.in</span></code> to ensure that <code class="docutils literal notranslate"><span class="pre">setup.py</span> <span class="pre">sdist</span></code> includes everything necessary
+for a successful source build.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">include</span> <span class="n">pyproject</span><span class="o">.</span><span class="n">toml</span>
+<span class="n">recursive</span><span class="o">-</span><span class="n">include</span> <span class="n">src</span> <span class="o">*.</span><span class="n">h</span> <span class="o">*.</span><span class="n">c</span> <span class="o">*.</span><span class="n">cpp</span>
+</pre></div>
+</div>
+<p>Using of <strong>auditwheel</strong> with wheel builds from setuptools_dso can cause problems
+as auditwheel has no concept of non-python libraries in python packages.</p>
+<p>If <strong>SETUPTOOLS_DSO_PLAT_NAME</strong> contains a manylinux name, setuptools_dso will
+inject this platform name when building wheels.
+Currently PIP version &lt;=21 will pass this environment variable through to PEP 517 builds.
+eg.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SETUPTOOLS_DSO_PLAT_NAME</span><span class="o">=</span><span class="n">manylinux1_x86_64</span> <span class="n">pip</span> <span class="n">wheel</span> <span class="o">-</span><span class="n">w</span> <span class="n">dist</span> <span class="o">.</span>
+</pre></div>
+</div>
+<section id="building-a-dso">
+<h2>Building a DSO<a class="headerlink" href="#building-a-dso" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="setuptools_dso.setup">
+<span class="sig-prename descclassname"><span class="pre">setuptools_dso.</span></span><span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">...,</span> <span class="pre">x_dsos=[DSO(...)]</span></em><span class="sig-paren">)</span><a class="headerlink" href="#setuptools_dso.setup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper around setuptools.setup() which injects extra Commands needed to build DSOs.
+Unknown keywords are passed through.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x_dsos</strong> – None, a list of <a class="reference internal" href="#setuptools_dso.DSO" title="setuptools_dso.DSO"><code class="xref py py-class docutils literal notranslate"><span class="pre">DSO</span></code></a> instances, or a callable with one argument returning such a list.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="setuptools_dso.DSO">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">setuptools_dso.</span></span><span class="sig-name descname"><span class="pre">DSO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name,</span> <span class="pre">sources,</span> <span class="pre">...,</span> <span class="pre">dsos=[DSO(...)],</span> <span class="pre">soversion=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#setuptools_dso.DSO" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Dynamic Shared Object to be built.
+Accepts the same options as <a class="reference internal" href="#setuptools_dso.Extension" title="setuptools_dso.Extension"><code class="xref py py-class docutils literal notranslate"><span class="pre">Extension</span></code></a> with additions:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dsos</strong> – A list of <a class="reference internal" href="#setuptools_dso.DSO" title="setuptools_dso.DSO"><code class="xref py py-class docutils literal notranslate"><span class="pre">DSO</span></code></a> s which this DSO will be linked against.</p></li>
+<li><p><strong>soversion</strong> (<em>str</em>) – None (default) or a string.  On supported targerts, this string
+which will be appended to create the SONAME.  eg. <code class="docutils literal notranslate"><span class="pre">soversion=&quot;0&quot;</span></code>
+will turn <code class="docutils literal notranslate"><span class="pre">libfoo.so</span></code> into <code class="docutils literal notranslate"><span class="pre">libfoo.so.0</span></code>.</p></li>
+<li><p><strong>lang_compile_args</strong> (<em>dict</em>) – Language specific (“c” or “c++”) compiler flags.
+eg. <code class="docutils literal notranslate"><span class="pre">{'c':['-DMAGIC']}</span></code></p></li>
+<li><p><strong>gen_info</strong> (<em>str</em>) – Controls generation of “info” module.
+True (default) uses the conventional filename,
+False disables generation,
+or a specific filename string.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p>The <a class="reference external" href="https://github.com/mdavidsaver/setuptools_dso/tree/master/example/src">example source</a>
+files while make up the non-python <code class="docutils literal notranslate"><span class="pre">demo</span></code> library are: <code class="docutils literal notranslate"><span class="pre">mylib.h</span></code>, <code class="docutils literal notranslate"><span class="pre">foo.c</span></code>, <code class="docutils literal notranslate"><span class="pre">bar.cpp</span></code>.
+This library will be expressed as a <cite>setuptools_dso.DSO</cite> object.
+The first argument is a directory path and library base name encoded like a python module.
+eg. the result of <code class="docutils literal notranslate"><span class="pre">dsodemo.lib.demo</span></code> will be eg. <code class="docutils literal notranslate"><span class="pre">dsodemo/lib/libdemo.so</span></code> or <code class="docutils literal notranslate"><span class="pre">dsodemo\lib\demo.dll</span></code>
+installed in the python module tree along-side any other python code or C extensions.</p>
+<p>Note that there need not be a <code class="docutils literal notranslate"><span class="pre">dsodemo/lib/__init__.py</span></code> as <code class="docutils literal notranslate"><span class="pre">dsodemo.lib</span></code> need not be a python package.
+However, if this file is present, then the generated <cite>dsodemo/lib/demo_dsoinfo.py</cite> will be accessible.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">setuptools_dso</span> <span class="kn">import</span> <span class="n">DSO</span><span class="p">,</span> <span class="n">Extension</span><span class="p">,</span> <span class="n">setup</span>
+
+<span class="n">dso</span> <span class="o">=</span> <span class="n">DSO</span><span class="p">(</span><span class="s1">&#39;dsodemo.lib.demo&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;src/foo.c&#39;</span><span class="p">,</span> <span class="s1">&#39;src/bar.cpp&#39;</span><span class="p">],</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="n">setup</span><span class="p">(</span>
+    <span class="o">...</span>
+    <span class="n">x_dsos</span> <span class="o">=</span> <span class="p">[</span><span class="n">dso</span><span class="p">],</span>
+    <span class="n">zip_safe</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="c1"># setuptools_dso is not compatible with eggs!</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">setup(x_dsos=...</span></code> argument may be either <code class="docutils literal notranslate"><span class="pre">None</span></code> (default),
+a list of <a class="reference internal" href="#setuptools_dso.DSO" title="setuptools_dso.DSO"><code class="xref py py-class docutils literal notranslate"><span class="pre">DSO</span></code></a> instances, or a callable returning such a list.
+A callable will be invoked during the <cite>build_dso</cite> phase with one argument of <code class="xref py py-class docutils literal notranslate"><span class="pre">distutils.core.Command</span></code>.
+(see <a class="reference internal" href="probe.html#probing"><span class="std std-ref">Probing Toolchain</span></a>)</p>
+<p>The <a class="reference internal" href="#setuptools_dso.DSO" title="setuptools_dso.DSO"><code class="xref py py-class docutils literal notranslate"><span class="pre">DSO</span></code></a> constructor understands the same keyword arguments as <cite>setuptools.Extension</cite>
+and <a class="reference external" href="https://docs.python.org/3/distutils/apiref.html#distutils.core.Extension">distutils.core.Extension</a>,
+with the addition of <code class="docutils literal notranslate"><span class="pre">dsos=[...]</span></code>, <code class="docutils literal notranslate"><span class="pre">soversion='...'</span></code>, and <code class="docutils literal notranslate"><span class="pre">lang_compile_args={'...':'...'}</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">dsos=</span></code> argument is a list of other <a class="reference internal" href="#setuptools_dso.DSO" title="setuptools_dso.DSO"><code class="xref py py-class docutils literal notranslate"><span class="pre">DSO</span></code></a> names (eg. <code class="docutils literal notranslate"><span class="pre">'dsodemo.lib.demo'</span></code>) to allow
+one <a class="reference internal" href="#setuptools_dso.DSO" title="setuptools_dso.DSO"><code class="xref py py-class docutils literal notranslate"><span class="pre">DSO</span></code></a> to be linked against others.</p>
+<p>eg. <code class="docutils literal notranslate"><span class="pre">dsos=['some.lib.foo']</span></code> will result in something like <code class="docutils literal notranslate"><span class="pre">gcc</span> <span class="pre">...</span> <span class="pre">-L.../some/lib</span> <span class="pre">-lfoo</span></code>.</p>
+</section>
+<section id="building-an-extension">
+<h2>Building an Extension<a class="headerlink" href="#building-an-extension" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="setuptools_dso.Extension">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">setuptools_dso.</span></span><span class="sig-name descname"><span class="pre">Extension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name,</span> <span class="pre">sources,</span> <span class="pre">...,</span> <span class="pre">dsos=[DSO(...)]</span></em><span class="sig-paren">)</span><a class="headerlink" href="#setuptools_dso.Extension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper around setuptools.Extension which accepts a list of <a class="reference internal" href="#setuptools_dso.DSO" title="setuptools_dso.DSO"><code class="xref py py-class docutils literal notranslate"><span class="pre">DSO</span></code></a> dependencies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dsos</strong> – A list of <a class="reference internal" href="#setuptools_dso.DSO" title="setuptools_dso.DSO"><code class="xref py py-class docutils literal notranslate"><span class="pre">DSO</span></code></a> s which this Extension will be linked against.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p><a class="reference internal" href="#setuptools_dso.Extension" title="setuptools_dso.Extension"><code class="xref py py-class docutils literal notranslate"><span class="pre">setuptools_dso.Extension</span></code></a> is a wrapper around <code class="docutils literal notranslate"><span class="pre">setuptools.Extension</span></code> which adds the <code class="docutils literal notranslate"><span class="pre">dsos=[...]</span></code> keyword argument.
+This allows a C extension module to be linked against a <code class="docutils literal notranslate"><span class="pre">DSO</span></code> by name.
+The named <code class="docutils literal notranslate"><span class="pre">DSO</span></code> may be built by the same <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>, or may already be present in <code class="docutils literal notranslate"><span class="pre">$PYTHONPATH</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">setuptools_dso</span> <span class="kn">import</span> <span class="n">DSO</span><span class="p">,</span> <span class="n">Extension</span><span class="p">,</span> <span class="n">setup</span>
+
+<span class="n">ext</span> <span class="o">=</span> <span class="n">Extension</span><span class="p">(</span><span class="s1">&#39;dsodemo.ext.dtest&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;src/extension.cpp&#39;</span><span class="p">],</span>
+    <span class="n">dsos</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;dsodemo.lib.demo&#39;</span><span class="p">],</span>
+<span class="p">)</span>
+
+<span class="n">setup</span><span class="p">(</span>
+    <span class="o">...</span>
+    <span class="n">ext_modules</span> <span class="o">=</span> <span class="p">[</span><span class="n">ext</span><span class="p">],</span>
+    <span class="n">zip_safe</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="c1"># setuptools_dso is not compatible with eggs!</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="cython">
+<h2>Cython<a class="headerlink" href="#cython" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="setuptools_dso.cythonize">
+<span class="sig-prename descclassname"><span class="pre">setuptools_dso.</span></span><span class="sig-name descname"><span class="pre">cythonize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orig</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#setuptools_dso.cythonize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper around Cython.Build.cythonize() to correct handling of
+<a class="reference internal" href="#setuptools_dso.DSO" title="setuptools_dso.DSO"><code class="xref py py-class docutils literal notranslate"><span class="pre">DSO</span></code></a> s and <a class="reference internal" href="#setuptools_dso.Extension" title="setuptools_dso.Extension"><code class="xref py py-class docutils literal notranslate"><span class="pre">Extension</span></code></a> s using them.</p>
+</dd></dl>
+
+<p>Version 1.3 added a <a class="reference internal" href="#setuptools_dso.cythonize" title="setuptools_dso.cythonize"><code class="xref py py-func docutils literal notranslate"><span class="pre">setuptools_dso.cythonize()</span></code></a> wrapper to correctly handle <code class="docutils literal notranslate"><span class="pre">Extension(dso=...)</span></code>.</p>
+</section>
+</section>
+<section id="runtime">
+<span id="dsoinfo"></span><h1>Runtime<a class="headerlink" href="#runtime" title="Permalink to this heading">¶</a></h1>
+<p>Beginning with setuptools-dso 2.0 a file <code class="docutils literal notranslate"><span class="pre">*_dsoinfo.py</span></code> will be generated alongside each DSO.
+eg. dso <code class="docutils literal notranslate"><span class="pre">&quot;mypkg.lib.thelib&quot;</span></code> will create <code class="docutils literal notranslate"><span class="pre">mypkg/lib/thelib_dsoinfo.py</span></code>.
+If <code class="docutils literal notranslate"><span class="pre">mypkg.lib</span></code> is a valid python packages (contains <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code>)
+then <a class="reference internal" href="#setuptools_dso.runtime.import_dsoinfo" title="setuptools_dso.runtime.import_dsoinfo"><code class="xref py py-func docutils literal notranslate"><span class="pre">setuptools_dso.runtime.import_dsoinfo()</span></code></a> may be used to retrieve
+build time information about the DSO including platform specific filename
+(eg. <code class="docutils literal notranslate"><span class="pre">thelib.dll</span></code> vs. <code class="docutils literal notranslate"><span class="pre">libthelib.so</span></code>).</p>
+<p>Beginning with 2.0 the necessary additions to <code class="docutils literal notranslate"><span class="pre">$PATH</span></code> or calls to <code class="docutils literal notranslate"><span class="pre">os.add_dll_directory()</span></code>
+can be made via <a class="reference internal" href="#setuptools_dso.dylink_prepare_dso" title="setuptools_dso.dylink_prepare_dso"><code class="xref py py-func docutils literal notranslate"><span class="pre">dylink_prepare_dso()</span></code></a>.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="setuptools_dso.dylink_prepare_dso">
+<span class="sig-prename descclassname"><span class="pre">setuptools_dso.</span></span><span class="sig-name descname"><span class="pre">dylink_prepare_dso</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dso</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">package</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#setuptools_dso.dylink_prepare_dso" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take steps necessary to allow the named DSO to be loaded implicitly.</p>
+<p>eg. On Windows, call <cite>os.add_dll_directory()</cite> as neeeded.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dso</strong> (<em>str</em>) – DSO name string (eg. ‘my.pkg.libs.adso’).</p></li>
+<li><p><strong>package</strong> (<em>str</em>) – Package name to resolve relative imports.  cf. importlib.import_module</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Info module for the named DSO</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Prior to 2.0, or if the generated module is not used,
+some additional runtime preparation is needed in order to find the <code class="docutils literal notranslate"><span class="pre">&quot;dsodemo.lib.demo&quot;</span></code> library
+when the <code class="docutils literal notranslate"><span class="pre">dsodemo.ext.dtest</span></code> Extension is imported on Windows.
+This could be placed in eg. <code class="docutils literal notranslate"><span class="pre">example/src/dsodemo/__init__.py</span></code>
+to ensure it always runs before the extension library is loaded.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># with setuptools_dso &gt;= 2.0a1</span>
+<span class="c1">#from setuptools_dso import dylink_prepare_dso</span>
+<span class="c1">#dylink_prepare_dso(&#39;..lib.demo&#39;)</span>
+
+<span class="c1"># or as previously:</span>
+
+<span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span>
+
+<span class="k">def</span> <span class="nf">fixpath</span><span class="p">():</span>
+    <span class="c1"># If this file is</span>
+    <span class="c1">#   .../ext/__init__.py</span>
+    <span class="c1"># DSOs are under</span>
+    <span class="c1">#   .../lib/</span>
+    <span class="n">libdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)))</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">os</span><span class="p">,</span> <span class="s1">&#39;add_dll_directory&#39;</span><span class="p">):</span> <span class="c1"># py &gt;= 3.8</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">add_dll_directory</span><span class="p">(</span><span class="n">libdir</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PATH&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="p">)</span>
+        <span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">libdir</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span><span class="p">:</span>
+    <span class="n">fixpath</span><span class="p">()</span>
+</pre></div>
+</div>
+<section id="use-with-ctypes">
+<h2>Use with ctypes<a class="headerlink" href="#use-with-ctypes" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="setuptools_dso.find_dso">
+<span class="sig-prename descclassname"><span class="pre">setuptools_dso.</span></span><span class="sig-name descname"><span class="pre">find_dso</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dso</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">package</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">so</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#setuptools_dso.find_dso" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lookup DSO file name.  eg. for use with ctypes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dso</strong> (<em>str</em>) – DSO name string (eg. ‘my.pkg.libs.adso’).</p></li>
+<li><p><strong>package</strong> (<em>str</em>) – Package name to resolve relative imports.  cf. importlib.import_module</p></li>
+<li><p><strong>so</strong> (<em>bool</em>) – When True (default) return SO qualified name.
+eg. “libblah.so.0” vs. “libblah.so”.
+No effect on Windows.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Absolute path string of DSO file.</p>
+</dd>
+</dl>
+<p>eg.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fname</span> <span class="o">=</span> <span class="n">setuptools_dso</span><span class="o">.</span><span class="n">find_dso</span><span class="p">(</span><span class="s1">&#39;my.pkg.libs.adso&#39;</span><span class="p">)</span>
+<span class="n">lib</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">CDLL</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">RTLD_GLOBAL</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<section id="info">
+<h3>Info<a class="headerlink" href="#info" title="Permalink to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="setuptools_dso.runtime.import_dsoinfo">
+<span class="sig-prename descclassname"><span class="pre">setuptools_dso.runtime.</span></span><span class="sig-name descname"><span class="pre">import_dsoinfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dso</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">package</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#setuptools_dso.runtime.import_dsoinfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Import and return “info” module for the named DSO.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dso</strong> (<em>str</em>) – DSO name string (eg. ‘my.pkg.libs.adso’).</p></li>
+<li><p><strong>package</strong> (<em>str</em>) – Package name to resolve relative imports.  cf. importlib.import_module</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Info module</p>
+</dd>
+</dl>
+<p>For example, on a ELF target the “info” module for a DSO “mypkg.lib.thelib” would contain the attributes:</p>
+<ul class="simple">
+<li><p><cite>.dsoname</cite>    eg. “mypkg.lib.thelib”</p></li>
+<li><p><cite>.libname</cite>    eg. “thelib.so”</p></li>
+<li><p><cite>.soname</cite>     eg. “thelib.so.0”</p></li>
+<li><p><cite>.filename</cite>   eg. “/full/path/to/thelib.so”</p></li>
+<li><p><cite>.sofilename</cite> eg. “/full/path/to/thelib.so.0”</p></li>
+</ul>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">setuptools_dso</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=mdavidsaver&repo=setuptools_dso&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Working with packages using setuptools_dso</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#num-jobs">NUM_JOBS</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#applying-to-your-package">Applying to your package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#building-a-dso">Building a DSO</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#building-an-extension">Building an Extension</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cython">Cython</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#runtime">Runtime</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#setuptools_dso.dylink_prepare_dso"><code class="docutils literal notranslate"><span class="pre">dylink_prepare_dso()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#use-with-ctypes">Use with ctypes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="probe.html">Probing Toolchain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="details.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="details.html#mechanics">Mechanics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="releasenotes.html">Release Notes</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">setuptools extension for building non-Python Dynamic Shared Objects</a></li>
+      <li>Next: <a href="probe.html" title="next chapter">Probing Toolchain</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Michael Davidsaver.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.3.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/usage.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/mdavidsaver/setuptools_dso" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="_static/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

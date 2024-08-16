@@ -1,0 +1,288 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Release Notes &#8212; setuptools_dso  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Troubleshooting" href="details.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="release-notes">
+<span id="releasenotes"></span><h1>Release Notes<a class="headerlink" href="#release-notes" title="Permalink to this heading">¶</a></h1>
+<section id="aug-2024">
+<h2>2.11 (Aug 2024)<a class="headerlink" href="#aug-2024" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Support for cpython 3.12 (Oliver Copping)</p></li>
+<li><p>Fix OSX w/ fix injection of -dynamiclib, injection of -dynamiclib</p></li>
+</ul>
+</section>
+<section id="nov-2023">
+<h2>2.10 (Nov 2023)<a class="headerlink" href="#nov-2023" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Support for namespace packages (Nathan Shiraini)</p></li>
+<li><p>Propagate inplace to all sub-Command (Nathan Shiraini)</p></li>
+<li><p>correctly test for aarch64 endianness</p></li>
+</ul>
+</section>
+<section id="june-2023">
+<h2>2.9 (June 2023)<a class="headerlink" href="#june-2023" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Extend and fixup <a class="reference internal" href="probe.html#setuptools_dso.ProbeToolchain.eval_macros" title="setuptools_dso.ProbeToolchain.eval_macros"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ProbeToolchain.eval_macros()</span></code></a>.  Adds <code class="docutils literal notranslate"><span class="pre">language=</span></code> argument, and fix when headers are included.</p></li>
+</ul>
+</section>
+<section id="may-2023">
+<h2>2.8 (May 2023)<a class="headerlink" href="#may-2023" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fix linking to editable install on Windows  (Kirill Smelkov)</p></li>
+<li><p>Try to limit parallel compile default by RAM as well as CPU.  On Linux only.</p></li>
+<li><p>Document <a class="reference internal" href="usage.html#num-jobs"><span class="std std-ref">NUM_JOBS</span></a>, understood since 1.4.</p></li>
+</ul>
+</section>
+<section id="feb-2023">
+<h2>2.7 (Feb 2023)<a class="headerlink" href="#feb-2023" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Ensure package with DSO but no Extension is installed as platlib.</p></li>
+<li><p>Adds <cite>cmdclass</cite> overrides for <cite>build</cite> and <cite>install</cite>.</p></li>
+</ul>
+</section>
+<section id="sept-2022">
+<h2>2.6 (Sept 2022)<a class="headerlink" href="#sept-2022" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Avoid mutable default arguments</p></li>
+<li><p>Workaround probable <a class="reference external" href="https://github.com/mdavidsaver/setuptools_dso/issues/23">bug</a> in <a class="reference external" href="https://github.com/pypa/setuptools/issues/3591">setuptools &gt;= 63.4.3</a></p></li>
+</ul>
+</section>
+<section id="jan-2022">
+<h2>2.5 (Jan 2022)<a class="headerlink" href="#jan-2022" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Add <a class="reference internal" href="probe.html#setuptools_dso.ProbeToolchain.info" title="setuptools_dso.ProbeToolchain.info"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ProbeToolchain.info</span></code></a> and <a class="reference internal" href="probe.html#setuptools_dso.probe.ToolchainInfo" title="setuptools_dso.probe.ToolchainInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">probe.ToolchainInfo</span></code></a> for <a class="reference internal" href="probe.html#probe-classify"><span class="std std-ref">Toolchain Classification</span></a>.</p></li>
+<li><p>Add <a class="reference internal" href="probe.html#setuptools_dso.ProbeToolchain.eval_macros" title="setuptools_dso.ProbeToolchain.eval_macros"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ProbeToolchain.eval_macros()</span></code></a></p></li>
+</ul>
+</section>
+<section id="oct-2021">
+<h2>2.4 (Oct 2021)<a class="headerlink" href="#oct-2021" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>More logging from DSO search process.</p></li>
+<li><p>Add setuptools as runtime dependency. (Edmund Blomley)</p></li>
+</ul>
+</section>
+<section id="aug-2021">
+<h2>2.3 (Aug 2021)<a class="headerlink" href="#aug-2021" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Strip out “-flto” when doing probe compiles with GCC and Clang.
+Fixes <a class="reference internal" href="probe.html#setuptools_dso.ProbeToolchain.sizeof" title="setuptools_dso.ProbeToolchain.sizeof"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setuptools_dso.ProbeToolchain.sizeof()</span></code></a> size extraction.</p></li>
+</ul>
+</section>
+<section id="id1">
+<h2>2.2 (Aug 2021)<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Add informational prints to <a class="reference internal" href="probe.html#setuptools_dso.ProbeToolchain" title="setuptools_dso.ProbeToolchain"><code class="xref py py-class docutils literal notranslate"><span class="pre">setuptools_dso.ProbeToolchain</span></code></a> methods.</p></li>
+<li><p><a class="reference internal" href="usage.html#setuptools_dso.setup" title="setuptools_dso.setup"><code class="xref py py-func docutils literal notranslate"><span class="pre">setuptools_dso.setup()</span></code></a> demote error to warning if ‘bdist_wheel’ already overridden.</p></li>
+</ul>
+</section>
+<section id="july-2021">
+<h2>2.1 (July 2021)<a class="headerlink" href="#july-2021" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Introduce usage of <strong>$SETUPTOOLS_DSO_PLAT_NAME</strong> to override platform name during wheel builds</p></li>
+<li><p>Add <a class="reference internal" href="probe.html#setuptools_dso.ProbeToolchain" title="setuptools_dso.ProbeToolchain"><code class="xref py py-class docutils literal notranslate"><span class="pre">setuptools_dso.ProbeToolchain</span></code></a> for toolchain introspection.</p></li>
+<li><p>Allow <a class="reference internal" href="usage.html#setuptools_dso.setup" title="setuptools_dso.setup"><code class="xref py py-func docutils literal notranslate"><span class="pre">setuptools_dso.setup()</span></code></a> argument x_dsos= to be a one argument callable returning a list of DSO instances.</p></li>
+<li><p>Correctly note that wheels with DSOs are not pure.</p></li>
+</ul>
+</section>
+<section id="june-2021">
+<h2>2.0 (June 2021)<a class="headerlink" href="#june-2021" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Begin automatic generation of an “info” python module for each DSO.  (Kaleb Barrett)</p></li>
+<li><p>Add the <a class="reference internal" href="usage.html#dsoinfo"><span class="std std-ref">Runtime</span></a> API to interact with “info” modules.</p></li>
+</ul>
+</section>
+<section id="may-2020">
+<h2>1.7 (May 2020)<a class="headerlink" href="#may-2020" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fix support for develop install (pip install -e).  (Kirill Smelkov)</p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>1.6 (May 2020)<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Use &#64;rpath as install_name prefix on MacOS.  (Mehul Tikekar)</p></li>
+<li><p>Remove usage of install_name_tool executable on MacOS.</p></li>
+</ul>
+</section>
+<section id="jan-2020">
+<h2>1.5 (Jan 2020)<a class="headerlink" href="#jan-2020" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fix parallel compile on MacOS with py&gt;=3.8.</p></li>
+</ul>
+</section>
+<section id="id3">
+<h2>1.4 (Jan 2020)<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Add fake cythonize() when Cython code generator not installed</p></li>
+<li><p>Parallel compile of DSO sources.</p></li>
+<li><p>build_dso: Take package_dir into account.  (Kirill Smelkov)</p></li>
+</ul>
+</section>
+<section id="nov-2019">
+<h2>1.3 (Nov 2019)<a class="headerlink" href="#nov-2019" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Add cythonize() wrapper</p></li>
+<li><p>Add “don’t clobber” logic for setup() arguments.  (Kirill Smelkov)</p></li>
+<li><p>handle DSOs in root (not in a package)</p></li>
+</ul>
+</section>
+<section id="aug-2019">
+<h2>1.2 (Aug 2019)<a class="headerlink" href="#aug-2019" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>include LICENSE/COPYRIGHT in dist</p></li>
+</ul>
+</section>
+<section id="id4">
+<h2>1.1 (Aug 2019)<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fix inplace build.  (Kirill Smelkov)</p></li>
+<li><p>Fix incremental rebuild.  (Kirill Smelkov)</p></li>
+</ul>
+</section>
+<section id="oct-2018">
+<h2>1.0 (Oct 2018)<a class="headerlink" href="#oct-2018" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Initial stable release</p></li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">setuptools_dso</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=mdavidsaver&repo=setuptools_dso&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Working with packages using setuptools_dso</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#applying-to-your-package">Applying to your package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#runtime">Runtime</a></li>
+<li class="toctree-l1"><a class="reference internal" href="probe.html">Probing Toolchain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="details.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="details.html#mechanics">Mechanics</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Release Notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#aug-2024">2.11 (Aug 2024)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nov-2023">2.10 (Nov 2023)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#june-2023">2.9 (June 2023)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#may-2023">2.8 (May 2023)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#feb-2023">2.7 (Feb 2023)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sept-2022">2.6 (Sept 2022)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#jan-2022">2.5 (Jan 2022)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#oct-2021">2.4 (Oct 2021)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#aug-2021">2.3 (Aug 2021)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">2.2 (Aug 2021)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#july-2021">2.1 (July 2021)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#june-2021">2.0 (June 2021)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#may-2020">1.7 (May 2020)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">1.6 (May 2020)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#jan-2020">1.5 (Jan 2020)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">1.4 (Jan 2020)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nov-2019">1.3 (Nov 2019)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#aug-2019">1.2 (Aug 2019)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">1.1 (Aug 2019)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#oct-2018">1.0 (Oct 2018)</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="details.html" title="previous chapter">Troubleshooting</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Michael Davidsaver.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.3.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/releasenotes.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/mdavidsaver/setuptools_dso" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="_static/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
