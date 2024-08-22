@@ -11,10 +11,20 @@ from multiprocessing import Pool
 import multiprocessing as MP
 import logging as log
 
-try:
-    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
-except ImportError:
-    _bdist_wheel = None
+def _import_bdist_wheel():
+    try:
+        from setuptools.command.bdist_wheel import bdist_wheel
+        return bdist_wheel
+    except ImportError:
+        pass
+    try:
+        from wheel.bdist_wheel import bdist_wheel
+        return bdist_wheel
+    except ImportError:
+        return None
+
+_bdist_wheel = _import_bdist_wheel()
+del _import_bdist_wheel
 
 from setuptools import Command, Distribution, Extension as _Extension
 from setuptools.command.build_ext import build_ext as _build_ext
