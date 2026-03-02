@@ -283,7 +283,8 @@ class dso2libmixin:
                 # For lack of a better idea, give both versions and hope that the non-functional
                 # one is really non-functional.
                 soargs.add('-Wl,-rpath,$ORIGIN/%s'%os.path.relpath(dsopath, mypath))
-                soargs.add(r'-Wl,-rpath,\$ORIGIN/%s'%os.path.relpath(dsopath, mypath))
+                if 'gcc' in self.compiler.linker_so[0]:
+                    soargs.add(r'-Wl,-rpath,\$ORIGIN/%s'%os.path.relpath(dsopath, mypath))
 
         # Do not append to extisting list as it may be shared
         # between multiple extensions
