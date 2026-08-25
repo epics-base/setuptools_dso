@@ -193,7 +193,7 @@ class ProbeToolchain(object):
             # MSVC
             raw = raw.replace(b'\x01\x01\x01', b'')
 
-        M = re.match(b'.*PROBEINFO\\[(\\d+)\\].*', raw, re.DOTALL)
+        M = re.match(b'.*PROBEINFO\\[(\\d+)\\].*', raw, flags=re.DOTALL)
         if M is None:
             print(repr(raw))
             raise RuntimeError('Unable to find PROBEINFO for %s'%typename)
@@ -304,17 +304,17 @@ void U_{macro} = ||||||; void X_{macro};
         # eg. GCC strips C/C++ comments, while MSVC leaves them in.
 
         # remove pre-processor directive lines
-        out = re.sub(r'^\s*#[^\n\r]*$', '', out, 0, re.MULTILINE)
+        out = re.sub(r'^\s*#[^\n\r]*$', '', out, count=0, flags=re.MULTILINE)
         # remove c++ line comments
-        out = re.sub(r'^//[^\n\r]*$', '', out, 0, re.MULTILINE)
+        out = re.sub(r'^//[^\n\r]*$', '', out, count=0, flags=re.MULTILINE)
         # remove C comments
-        out = re.sub(r'/\*.*?\*/', '', out, 0, re.MULTILINE|re.DOTALL)
+        out = re.sub(r'/\*.*?\*/', '', out, count=0, flags=re.MULTILINE|re.DOTALL)
 
         defs = OrderedDict()
 
         for name in macros:
             pat = r'.*void ([DU])_%(name)s = \|\|\|(.*?)\|\|\|; void X_%(name)s;.*'%{'name':name}
-            M = re.match(pat, out, re.MULTILINE|re.DOTALL)
+            M = re.match(pat, out, flags=re.MULTILINE|re.DOTALL)
             if M is None:
                 raise RuntimeError("In %r\nFailed to find match for %r using %r"%(out, name, pat))
             du, val = M.groups()
