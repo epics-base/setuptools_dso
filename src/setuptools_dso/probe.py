@@ -124,6 +124,12 @@ class ProbeToolchain(object):
             return True
         except (ExecError, CompileError):
             return False
+        except Exception as e:
+            # workaround for duplicate exception types introduced by setuptools v84.
+            # https://github.com/epics-base/setuptools_dso/issues/45
+            if e.__class__.__name__=='CompileError':
+                return False
+            raise
 
     def check_includes(self, headers, **kws):
         """Return true if all of the headers may be included (in order)
