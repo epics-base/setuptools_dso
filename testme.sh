@@ -19,6 +19,7 @@ rm -rf env
 which python
 python --version
 
+pip install setuptools
 python setup.py clean -a
 pip install cython
 pip install -v .

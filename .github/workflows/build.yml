@@ -184,6 +184,8 @@ jobs:
           cd /io
           export PATH="/opt/python/${{ matrix.pyver }}/bin:\$PATH"
           which python
+          python --version
+          python -m pip --version
 
           python -m pip download -d dist setuptools wheel nose2
           python -m pip install -v --no-index -f dist setuptools wheel nose2
