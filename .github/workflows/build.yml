@@ -25,9 +25,9 @@ jobs:
             python-version: "3.7"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
       - name: Prepare
@@ -172,7 +172,7 @@ jobs:
             pyver: "cp38-cp38"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Test
         run: |
           # can't use GHA native docker support since GHA magic binaries need .so absent from old manylinux images :(
@@ -220,9 +220,9 @@ jobs:
     needs: [test, manylinux]
     name: Upload
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
       - name: Install dependencies
@@ -243,7 +243,7 @@ jobs:
           ls dist/setuptools_dso-*
           tar -taf dist/setuptools_dso-*.tar.*
       - name: Save
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: artifacts
           path: dist/setuptools_dso-*
