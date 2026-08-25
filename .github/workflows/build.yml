@@ -142,100 +142,35 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        manylinux: ["manylinux1", "manylinux2010", "manylinux2014"]
-        piparch: ["i686", "x86_64"]
-        pyver: ["cp27-cp27m", "cp27-cp27mu", "cp36-cp36m", "cp37-cp37m", "cp38-cp38", "cp39-cp39", "cp310-cp310", "cp311-cp311", "cp312-cp312"]
-        exclude:
-          # manylinux1 doesn't include py >= 3.10
+        manylinux: ["manylinux_2_34"]
+        piparch: ["x86_64"]
+        pyver: ["cp39-cp39", "cp310-cp310", "cp311-cp311", "cp312-cp312", "cp313-cp313", "cp314-cp314", "cp315-cp315"]
+        # explicit matrix for unsupported images / py versions
+        include:
           - manylinux: "manylinux1"
-            piparch: "i686"
-            pyver: "cp310-cp310"
-
-          - manylinux: "manylinux1"
-            piparch: "x86_64"
-            pyver: "cp310-cp310"
-
-          - manylinux: "manylinux1"
-            piparch: "i686"
-            pyver: "cp311-cp311"
-
-          - manylinux: "manylinux1"
-            piparch: "x86_64"
-            pyver: "cp311-cp311"
-
-          - manylinux: "manylinux1"
-            piparch: "i686"
-            pyver: "cp312-cp312"
-
-          - manylinux: "manylinux1"
-            piparch: "x86_64"
-            pyver: "cp312-cp312"
-
-          # manylinux2010 and above don't provide 2.7 in images
-          - manylinux: "manylinux2010"
             piparch: "i686"
             pyver: "cp27-cp27m"
 
-          - manylinux: "manylinux2010"
-            piparch: "i686"
-            pyver: "cp27-cp27mu"
-
-          - manylinux: "manylinux2010"
+          - manylinux: "manylinux1"
             piparch: "x86_64"
             pyver: "cp27-cp27m"
 
+          - manylinux: "manylinux1"
+            piparch: "x86_64"
+            pyver: "cp27-cp27mu"
+
           - manylinux: "manylinux2010"
-            piparch: "x86_64"
-            pyver: "cp27-cp27mu"
-
-          - manylinux: "manylinux2014"
-            piparch: "i686"
-            pyver: "cp27-cp27m"
-
-          - manylinux: "manylinux2014"
-            piparch: "i686"
-            pyver: "cp27-cp27mu"
-
-          - manylinux: "manylinux2014"
-            piparch: "i686"
-            pyver: "cp36-cp36m"
-
-          - manylinux: "manylinux2014"
-            piparch: "i686"
-            pyver: "cp37-cp37m"
-
-          - manylinux: "manylinux2014"
-            piparch: "x86_64"
-            pyver: "cp27-cp27m"
-
-          - manylinux: "manylinux2014"
-            piparch: "x86_64"
-            pyver: "cp27-cp27mu"
-
-          - manylinux: "manylinux2014"
-            piparch: "x86_64"
-            pyver: "cp36-cp36m"
-
-          - manylinux: "manylinux2014"
             piparch: "x86_64"
             pyver: "cp37-cp37m"
 
-          # manylinux2010 doesn't include pip with >= 3.11
           - manylinux: "manylinux2010"
-            piparch: "i686"
-            pyver: "cp311-cp311"
+            piparch: "x86_64"
+            pyver: "cp37-cp37m"
 
           - manylinux: "manylinux2010"
             piparch: "x86_64"
-            pyver: "cp311-cp311"
+            pyver: "cp38-cp38"
 
-          - manylinux: "manylinux2010"
-            piparch: "i686"
-            pyver: "cp312-cp312"
-
-          - manylinux: "manylinux2010"
-            piparch: "x86_64"
-            pyver: "cp312-cp312"
     steps:
       - uses: actions/checkout@v4
       - name: Test
