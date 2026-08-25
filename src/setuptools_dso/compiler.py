@@ -4,6 +4,7 @@
 import os
 import logging as log
 from functools import partial
+import subprocess as SP
 
 try:
     # Allows for 3.12 support
@@ -81,9 +82,12 @@ def _msvc_preprocess(self, source, output_file=None, macros=None,
     if self.force or output_file is None or newer(source, output_file):
         if output_file:
             self.mkpath(os.path.dirname(output_file))
+        runit = getattr(self, 'call', self.spawn)
+        # .spawn() deprecated as of setuptools v84
+        # .call() has the same argument set, but throws different exceptions
         try:
-            self.spawn(pp_args)
-        except ExecError as msg:
+            runit(pp_args)
+        except (OSError, SP.CalledProcessError, ExecError) as msg:
             raise CompileError(msg)
 
 def new_compiler(**kws):
