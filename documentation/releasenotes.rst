@@ -5,11 +5,11 @@ Release Notes
 
 .. currentmodule:: setuptools_dso
 
-2.12.4 (UNRELEASED)
+2.12.4 (Aug 2026)
 -------------------
 
 * Only escape ``-rpath $ORIGIN`` with GCC (Kirill Smelkov).
-* Hack around duplicate CompileError of setuptools v84.
+* Hack around duplicate ``CompileError`` type introduced by setuptools v84.
 
 2.12.3 (Feb 2026)
 -----------------
