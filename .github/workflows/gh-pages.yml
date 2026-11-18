@@ -1,0 +1,49 @@
+name: GH pages
+
+on: [push, pull_request, workflow_dispatch]
+
+permissions: {}
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: "apt-get install"
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install python3-sphinx
+
+    - name: sphinx
+      run: |
+        make -C documentation
+        touch documentation/_build/html/.nojekyll
+
+    - name: Upload gh-pages preview
+      id: ghpages
+      uses: actions/upload-pages-artifact@v5
+      with:
+        retention-days: 7
+        path: documentation/_build/html/
+
+
+  publish:
+    runs-on: ubuntu-latest
+
+    if: github.ref=='refs/heads/master'
+    needs: generate
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.ghpages.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
