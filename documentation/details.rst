@@ -29,7 +29,7 @@ capabilities of the executable format used.
 ELF (Linux, \*NIX, \*BSD)
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For ELF (Executable and Linking Format) targets the RPATH mechanism is used with the magic $ORIGIN/ prefix.
+For ELF (Executable and Linking Format) targets the RPATH mechanism is used with the magic ``$ORIGIN/`` prefix.
 
 Take as an example the following installed module tree:
 
@@ -55,9 +55,17 @@ Mach-O (OSX)
 
 Historically Mach-O did not support anything like RPATH.
 However, it now does (cf. 'man dyld')
+The equivalence with GCC+ELF involves both the library name (SONAME / ``-install_name``) and ``-rpath``.
 
-The equivalence with GCC+ELF is for ``-Wl,-soname,libsup.so.0`` to become ``-install\_name @rpath/libsup.0.dylib``.
-Then ``-Wl,-rpath,'$ORIGIN/lib'`` becomes ``-Wl,-rpath,@loader_path/lib``.
+.. list-table::
+   :header-rows: 1
+
+   * - ELF
+     - Mach-O
+   * - ``-Wl,-soname,libsup.so.0``
+     - ``-install_name @rpath/libsup.0.dylib``
+   * - ``-Wl,-rpath,'$ORIGIN/lib'``
+     - ``-Wl,-rpath,@loader_path/lib``
 
 PE (Windows)
 ~~~~~~~~~~~~
